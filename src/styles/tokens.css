@@ -1,0 +1,104 @@
+/*
+ * Design tokens — ported verbatim from the "Book Itch" design
+ * (design/pages/*.html, extracted from the Claude Design canvas,
+ * artifact 16f8fd3f-4b72-4061-a4be-af3edb5154d7, 2026-10-28).
+ *
+ * Values are not to be changed without checking with the design first
+ * (see ACTIONS.md). Applied on :root so every CSS var is available
+ * app-wide; [data-theme="dark"] on <html> swaps the palette.
+ */
+
+:root {
+  /* color */
+  --bg: #fbf5ec;
+  --surface: #fffbf6;
+  --tint: #f1e9fc;
+  --tint-strong: #e2d3f7;
+  --note: #fcebbd;
+  --border: #eadfd2;
+  --border-strong: #8a7d96;
+  --ink: #2a1a3d;
+  --ink-muted: #5f5370;
+  --plum: #2b1342;
+  --on-plum: #f6eefc;
+  --on-plum-muted: #cdbde0;
+  --violet-300: #a98be0;
+  --on-violet-300: #2b1342;
+  --primary: #6b46c1;
+  --on-primary: #ffffff;
+  --primary-deep: #351a5e;
+  --on-primary-deep: #ffffff;
+  --success-bg: #dcf2e5;
+  --success-ink: #1f6b47;
+  --reading-bg: #e3defa;
+  --reading-ink: #4a3bb0;
+  --want-bg: #f7d7f0;
+  --want-ink: #8f2f86;
+  --rust: #b0481a;
+  --focus: #6b46c1;
+  /* stats-page series colors */
+  --series-fiction: #6b46c1;
+  --series-nonfiction: #c8702a;
+
+  /* spacing (equals Tailwind's default p-1..p-10 scale, see tailwind.config.ts) */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-10: 40px;
+
+  /* radius */
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 24px;
+  --radius-pill: 999px;
+
+  /* elevation */
+  --shadow-card: 0 2px 8px rgba(60, 30, 90, 0.08);
+  --shadow-raised: 0 10px 28px rgba(60, 30, 90, 0.14);
+
+  /* type */
+  --font-sans: 'Plus Jakarta Sans', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-script: 'Caveat', 'Segoe Print', cursive;
+  --text-display-xl: 700 36px/44px var(--font-sans);
+  --text-display-lg: 700 28px/36px var(--font-sans);
+  --text-heading: 700 22px/28px var(--font-sans);
+  --text-title: 600 17px/24px var(--font-sans);
+  --text-body: 400 14px/22px var(--font-sans);
+  --text-body-sm: 400 12px/18px var(--font-sans);
+  --text-label: 600 12px/16px var(--font-sans);
+  --text-stat: 700 24px/30px var(--font-sans);
+  --text-script-lg: 600 28px/32px var(--font-script);
+  --text-script-md: 500 22px/26px var(--font-script);
+  --text-script-sm: 500 18px/24px var(--font-script);
+}
+
+:root[data-theme='dark'] {
+  --bg: #1a0f26;
+  --surface: #251634;
+  --tint: #2e1c42;
+  --tint-strong: #43295f;
+  --note: #4a3a1a;
+  --border: #3d2b52;
+  --border-strong: #8f7fa3;
+  --ink: #f6eefc;
+  --ink-muted: #bcaecb;
+  --plum: #3b2160;
+  --primary: #b89df2;
+  --on-primary: #1a0f26;
+  --primary-deep: #e3d4fb;
+  --on-primary-deep: #1a0f26;
+  --success-bg: #1d3a2c;
+  --success-ink: #8fdcb3;
+  --reading-bg: #34285e;
+  --reading-ink: #c3b8ff;
+  --want-bg: #4a2347;
+  --want-ink: #f0b4e8;
+  --focus: #d9c6fa;
+  --series-fiction: #9474e0;
+  --series-nonfiction: #c97a3a;
+}

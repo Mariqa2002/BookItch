@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="theme-color" content="#2b1342" media="(prefers-color-scheme: dark)" />
+    <meta name="theme-color" content="#fbf5ec" media="(prefers-color-scheme: light)" />
+    <meta name="description" content="Book Itch — track what you're reading, what you want to read, and your thoughts along the way." />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Caveat:wght@500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+
+    <!--
+      Pre-paint theme bootstrap: reads the saved preference (or system
+      preference when set to "auto") before React mounts, so the page
+      never flashes the wrong theme. Mirrors src/lib/theme.tsx.
+    -->
+    <script>
+      (function () {
+        try {
+          // useLocalStorage (src/lib/useLocalStorage.ts) always JSON-encodes,
+          // so the raw value here is '"dark"', not dark — JSON.parse it back.
+          var raw = localStorage.getItem('book-itch:theme-mode');
+          var stored = raw ? JSON.parse(raw) : 'auto';
+          var resolved =
+            stored === 'auto'
+              ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light')
+              : stored;
+          document.documentElement.setAttribute('data-theme', resolved);
+        } catch (e) {
+          document.documentElement.setAttribute('data-theme', 'light');
+        }
+      })();
+    </script>
+
+    <title>Book Itch</title>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

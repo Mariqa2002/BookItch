@@ -1,0 +1,646 @@
+<!DOCTYPE html>
+<html lang="en"><head><style data-dc-design-system-vars="">@layer{:root{--bg:#fbf5ec;--surface:#fffbf6;--tint:#f1e9fc;--tint-strong:#e2d3f7;--note:#fcebbd;--border:#eadfd2;--border-strong:#8a7d96;--ink:#2a1a3d;--ink-muted:#5f5370;--plum:#2b1342;--on-plum:#f6eefc;--on-plum-muted:#cdbde0;--violet-300:#a98be0;--on-violet-300:#2b1342;--primary:#6b46c1;--on-primary:#ffffff;--primary-deep:#351a5e;--on-primary-deep:#ffffff;--success-bg:#dcf2e5;--success-ink:#1f6b47;--reading-bg:#e3defa;--reading-ink:#4a3bb0;--want-bg:#f7d7f0;--want-ink:#8f2f86;--rust:#b0481a;--focus:#6b46c1;--shadow-card:0 2px 8px rgba(60,30,90,0.08);--shadow-raised:0 10px 28px rgba(60,30,90,0.14);--space-1:4px;--space-2:8px;--space-3:12px;--space-4:16px;--space-5:20px;--space-6:24px;--space-8:32px;--space-10:40px;--radius-sm:8px;--radius-md:12px;--radius-lg:16px;--radius-xl:24px;--radius-pill:999px;--font-sans:"Plus Jakarta Sans", system-ui, -apple-system, "Segoe UI", sans-serif;--font-script:"Caveat", "Segoe Print", cursive;--text-display-xl:700 36px/44px var(--font-sans);--text-display-lg:700 28px/36px var(--font-sans);--text-heading:700 22px/28px var(--font-sans);--text-title:600 17px/24px var(--font-sans);--text-body:400 14px/22px var(--font-sans);--text-body-sm:400 12px/18px var(--font-sans);--text-label:600 12px/16px var(--font-sans);--text-stat:700 24px/30px var(--font-sans);--text-script-lg:600 28px/32px var(--font-script);--text-script-md:500 22px/26px var(--font-script);--text-script-sm:500 18px/24px var(--font-script);}}</style>
+
+
+<meta charset="utf-8">
+<title>Book Itch Stats</title>
+<script src="a3495714-ea01-4967-b7df-ff4c5d7cca47"></script>
+<style>.bk-btn{font:600 13px/16px var(--font-sans);display:inline-flex;align-items:center;gap:var(--space-2);padding:var(--space-3) var(--space-5);border-radius:var(--radius-pill);border:0;cursor:pointer}
+.bk-btn:focus-visible,.bk-chip:focus-visible,.bk-tab:focus-visible,.bk-nav:focus-visible,.bk-input:focus-visible,.bk-search input:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
+.bk-btn--primary{background:var(--primary);color:var(--on-primary)}
+.bk-btn--deep{background:var(--primary-deep);color:var(--on-primary-deep)}
+.bk-btn--soft{background:var(--tint-strong);color:var(--ink)}
+.bk-btn--ghost{background:transparent;color:var(--ink);box-shadow:inset 0 0 0 1px var(--border-strong)}
+.bk-btn:disabled{opacity:.5;cursor:not-allowed}
+.bk-badge{font:600 11px/16px var(--font-sans);display:inline-flex;align-items:center;gap:var(--space-1);padding:2px var(--space-3);border-radius:var(--radius-pill)}
+.bk-badge--reading{background:var(--reading-bg);color:var(--reading-ink)}
+.bk-badge--completed{background:var(--success-bg);color:var(--success-ink)}
+.bk-badge--want{background:var(--want-bg);color:var(--want-ink)}
+.bk-progress{display:flex;align-items:center;gap:var(--space-3);font:400 12px/18px var(--font-sans);color:var(--ink-muted)}
+.bk-progress__track{flex:1;height:6px;border-radius:var(--radius-pill);background:var(--tint-strong);overflow:hidden}
+.bk-progress__fill{height:100%;border-radius:var(--radius-pill);background:var(--primary-deep)}
+.bk-search{display:flex;align-items:center;gap:var(--space-2);padding:var(--space-3) var(--space-4);background:var(--surface);border-radius:var(--radius-pill);box-shadow:inset 0 0 0 1px var(--border-strong);color:var(--ink-muted)}
+.bk-search input{flex:1;border:0;background:transparent;font:400 13px/18px var(--font-sans);color:var(--ink);outline:0}
+.bk-search:focus-within{outline:2px solid var(--focus);outline-offset:2px}
+.bk-search input::placeholder{color:var(--ink-muted)}
+.bk-chip{font:600 12px/16px var(--font-sans);padding:var(--space-2) var(--space-4);border-radius:var(--radius-pill);border:0;background:var(--tint-strong);color:var(--ink);cursor:pointer}
+.bk-chip[aria-pressed=true]{background:var(--primary);color:var(--on-primary)}
+.bk-tabs{display:flex;gap:var(--space-6);border-bottom:1px solid var(--border)}
+.bk-tab{font:600 13px/18px var(--font-sans);padding:var(--space-3) 0;border:0;background:transparent;color:var(--ink-muted);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px}
+.bk-tab[aria-selected=true]{color:var(--ink);border-bottom-color:var(--primary-deep)}
+.bk-nav{display:flex;align-items:center;gap:var(--space-3);width:100%;padding:var(--space-3) var(--space-4);border:0;border-radius:var(--radius-pill);background:transparent;color:var(--on-plum-muted);font:600 14px/20px var(--font-sans);cursor:pointer;text-align:left}
+.bk-nav--active{background:var(--violet-300);color:var(--on-violet-300)}
+.bk-side{background:var(--plum);padding:var(--space-5) var(--space-4);border-radius:var(--radius-xl);width:196px;display:flex;flex-direction:column;gap:var(--space-1)}
+.bk-side__brand{font:700 28px/32px var(--font-sans);color:var(--on-plum);padding:0 var(--space-4) var(--space-5)}
+.bk-side__sign{font:500 22px/26px var(--font-script);color:var(--on-plum-muted);padding:var(--space-6) var(--space-4) 0}
+.bk-stat{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);box-shadow:var(--shadow-card);padding:var(--space-4);min-width:150px}
+.bk-stat__n{font:700 24px/30px var(--font-sans);color:var(--ink)}
+.bk-stat__l{font:400 12px/18px var(--font-sans);color:var(--ink-muted)}
+.bk-card{display:flex;flex-direction:column;gap:var(--space-2);width:132px;font-family:var(--font-sans)}
+.bk-cover{height:168px;border-radius:var(--radius-sm);display:flex;flex-direction:column;justify-content:flex-end;padding:var(--space-3);box-shadow:var(--shadow-card);font:700 17px/20px var(--font-sans)}
+.bk-cover--butter{background:var(--note);color:var(--ink)}
+.bk-cover--sage{background:var(--success-ink);color:#fff}
+.bk-cover--plum{background:var(--plum);color:var(--on-plum)}
+.bk-cover--rust{background:var(--rust);color:#fff}
+.bk-card__t{font:600 12px/16px var(--font-sans);color:var(--ink)}
+.bk-card__a{font:400 11px/16px var(--font-sans);color:var(--ink-muted)}
+.bk-chap{display:flex;align-items:center;gap:var(--space-3);padding:var(--space-3) var(--space-4);border-radius:var(--radius-md);background:var(--surface);border:1px solid var(--border);font-family:var(--font-sans);color:var(--ink)}
+.bk-chap--current{background:var(--tint)}
+.bk-chap__main{flex:1}
+.bk-chap__t{font:600 13px/18px var(--font-sans)}
+.bk-chap__s{font:400 11px/16px var(--font-sans);color:var(--ink-muted)}
+.bk-dot{width:18px;height:18px;border-radius:var(--radius-pill);box-shadow:inset 0 0 0 1.5px var(--border-strong);display:inline-flex;align-items:center;justify-content:center;flex:none}
+.bk-dot--done{background:var(--success-ink);box-shadow:none;color:#fff}
+.bk-sticky{background:var(--note);border-radius:var(--radius-lg);padding:var(--space-5);box-shadow:var(--shadow-card);width:260px;color:var(--ink)}
+.bk-sticky__t{font:500 22px/26px var(--font-script);margin-bottom:var(--space-3)}
+.bk-sticky ul{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:var(--space-3)}
+.bk-sticky li{display:flex;align-items:center;gap:var(--space-3);font:400 13px/18px var(--font-sans)}
+.bk-sticky__f{font:500 22px/26px var(--font-script);margin-top:var(--space-4)}
+.bk-quote{background:var(--tint);border-radius:var(--radius-xl);padding:var(--space-6);width:300px;color:var(--ink)}
+.bk-quote__q{font:500 22px/28px var(--font-script);margin:0}
+.bk-quote__a{font:400 12px/18px var(--font-sans);color:var(--ink-muted);margin-top:var(--space-3)}
+.bk-note{display:flex;gap:var(--space-3);width:380px}
+.bk-input{flex:1;padding:var(--space-3) var(--space-4);border-radius:var(--radius-sm);border:0;box-shadow:inset 0 0 0 1px var(--border-strong);background:var(--surface);color:var(--ink);font:400 13px/18px var(--font-sans)}
+.bk-input::placeholder{color:var(--ink-muted)}
+.bk-toggle{display:inline-flex;padding:3px;border-radius:var(--radius-pill);background:var(--tint-strong);gap:2px}
+.bk-toggle button{width:32px;height:32px;border:0;border-radius:var(--radius-pill);background:transparent;color:var(--ink);cursor:pointer;display:inline-flex;align-items:center;justify-content:center}
+.bk-toggle button[aria-pressed=true]{background:var(--primary-deep);color:var(--on-primary-deep)}
+.bk-toggle button:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
+</style>
+<script src="2843d132-8cd2-40eb-a5cf-ccea9dcfa69e"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>/* cyrillic-ext */
+@font-face {
+  font-family: 'Caveat';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url(https://fonts.gstatic.com/s/caveat/v23/Wnz6HAc5bAfYB2Q7azYYmg8.woff2) format('woff2');
+  unicode-range: U+0460-052F, U+1C80-1C8A, U+20B4, U+2DE0-2DFF, U+A640-A69F, U+FE2E-FE2F;
+}
+/* cyrillic */
+@font-face {
+  font-family: 'Caveat';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url(https://fonts.gstatic.com/s/caveat/v23/Wnz6HAc5bAfYB2Q7YjYYmg8.woff2) format('woff2');
+  unicode-range: U+0301, U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116;
+}
+/* latin-ext */
+@font-face {
+  font-family: 'Caveat';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url(https://fonts.gstatic.com/s/caveat/v23/Wnz6HAc5bAfYB2Q7aDYYmg8.woff2) format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C4, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+/* latin */
+@font-face {
+  font-family: 'Caveat';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url("c20f0280-b06c-4273-8b0d-0f0ff6067132") format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+/* cyrillic-ext */
+@font-face {
+  font-family: 'Caveat';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url(https://fonts.gstatic.com/s/caveat/v23/Wnz6HAc5bAfYB2Q7azYYmg8.woff2) format('woff2');
+  unicode-range: U+0460-052F, U+1C80-1C8A, U+20B4, U+2DE0-2DFF, U+A640-A69F, U+FE2E-FE2F;
+}
+/* cyrillic */
+@font-face {
+  font-family: 'Caveat';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url(https://fonts.gstatic.com/s/caveat/v23/Wnz6HAc5bAfYB2Q7YjYYmg8.woff2) format('woff2');
+  unicode-range: U+0301, U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116;
+}
+/* latin-ext */
+@font-face {
+  font-family: 'Caveat';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url(https://fonts.gstatic.com/s/caveat/v23/Wnz6HAc5bAfYB2Q7aDYYmg8.woff2) format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C4, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+/* latin */
+@font-face {
+  font-family: 'Caveat';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url("c20f0280-b06c-4273-8b0d-0f0ff6067132") format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+/* cyrillic-ext */
+@font-face {
+  font-family: 'Plus Jakarta Sans';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url(https://fonts.gstatic.com/s/plusjakartasans/v12/LDIoaomQNQcsA88c7O9yZ4KMCoOg4Ko70yyygA.woff2) format('woff2');
+  unicode-range: U+0460-052F, U+1C80-1C8A, U+20B4, U+2DE0-2DFF, U+A640-A69F, U+FE2E-FE2F;
+}
+/* vietnamese */
+@font-face {
+  font-family: 'Plus Jakarta Sans';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url(https://fonts.gstatic.com/s/plusjakartasans/v12/LDIoaomQNQcsA88c7O9yZ4KMCoOg4Ko50yyygA.woff2) format('woff2');
+  unicode-range: U+0102-0103, U+0110-0111, U+0128-0129, U+0168-0169, U+01A0-01A1, U+01AF-01B0, U+0300-0301, U+0303-0304, U+0308-0309, U+0323, U+0329, U+1EA0-1EF9, U+20AB;
+}
+/* latin-ext */
+@font-face {
+  font-family: 'Plus Jakarta Sans';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url(https://fonts.gstatic.com/s/plusjakartasans/v12/LDIoaomQNQcsA88c7O9yZ4KMCoOg4Ko40yyygA.woff2) format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C4, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+/* latin */
+@font-face {
+  font-family: 'Plus Jakarta Sans';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("b2c14083-0f71-4adc-92f0-fb4f2b988a42") format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+/* cyrillic-ext */
+@font-face {
+  font-family: 'Plus Jakarta Sans';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url(https://fonts.gstatic.com/s/plusjakartasans/v12/LDIoaomQNQcsA88c7O9yZ4KMCoOg4Ko70yyygA.woff2) format('woff2');
+  unicode-range: U+0460-052F, U+1C80-1C8A, U+20B4, U+2DE0-2DFF, U+A640-A69F, U+FE2E-FE2F;
+}
+/* vietnamese */
+@font-face {
+  font-family: 'Plus Jakarta Sans';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url(https://fonts.gstatic.com/s/plusjakartasans/v12/LDIoaomQNQcsA88c7O9yZ4KMCoOg4Ko50yyygA.woff2) format('woff2');
+  unicode-range: U+0102-0103, U+0110-0111, U+0128-0129, U+0168-0169, U+01A0-01A1, U+01AF-01B0, U+0300-0301, U+0303-0304, U+0308-0309, U+0323, U+0329, U+1EA0-1EF9, U+20AB;
+}
+/* latin-ext */
+@font-face {
+  font-family: 'Plus Jakarta Sans';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url(https://fonts.gstatic.com/s/plusjakartasans/v12/LDIoaomQNQcsA88c7O9yZ4KMCoOg4Ko40yyygA.woff2) format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C4, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+/* latin */
+@font-face {
+  font-family: 'Plus Jakarta Sans';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url("b2c14083-0f71-4adc-92f0-fb4f2b988a42") format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+/* cyrillic-ext */
+@font-face {
+  font-family: 'Plus Jakarta Sans';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url(https://fonts.gstatic.com/s/plusjakartasans/v12/LDIoaomQNQcsA88c7O9yZ4KMCoOg4Ko70yyygA.woff2) format('woff2');
+  unicode-range: U+0460-052F, U+1C80-1C8A, U+20B4, U+2DE0-2DFF, U+A640-A69F, U+FE2E-FE2F;
+}
+/* vietnamese */
+@font-face {
+  font-family: 'Plus Jakarta Sans';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url(https://fonts.gstatic.com/s/plusjakartasans/v12/LDIoaomQNQcsA88c7O9yZ4KMCoOg4Ko50yyygA.woff2) format('woff2');
+  unicode-range: U+0102-0103, U+0110-0111, U+0128-0129, U+0168-0169, U+01A0-01A1, U+01AF-01B0, U+0300-0301, U+0303-0304, U+0308-0309, U+0323, U+0329, U+1EA0-1EF9, U+20AB;
+}
+/* latin-ext */
+@font-face {
+  font-family: 'Plus Jakarta Sans';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url(https://fonts.gstatic.com/s/plusjakartasans/v12/LDIoaomQNQcsA88c7O9yZ4KMCoOg4Ko40yyygA.woff2) format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C4, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+/* latin */
+@font-face {
+  font-family: 'Plus Jakarta Sans';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url("b2c14083-0f71-4adc-92f0-fb4f2b988a42") format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+/* cyrillic-ext */
+@font-face {
+  font-family: 'Plus Jakarta Sans';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url(https://fonts.gstatic.com/s/plusjakartasans/v12/LDIoaomQNQcsA88c7O9yZ4KMCoOg4Ko70yyygA.woff2) format('woff2');
+  unicode-range: U+0460-052F, U+1C80-1C8A, U+20B4, U+2DE0-2DFF, U+A640-A69F, U+FE2E-FE2F;
+}
+/* vietnamese */
+@font-face {
+  font-family: 'Plus Jakarta Sans';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url(https://fonts.gstatic.com/s/plusjakartasans/v12/LDIoaomQNQcsA88c7O9yZ4KMCoOg4Ko50yyygA.woff2) format('woff2');
+  unicode-range: U+0102-0103, U+0110-0111, U+0128-0129, U+0168-0169, U+01A0-01A1, U+01AF-01B0, U+0300-0301, U+0303-0304, U+0308-0309, U+0323, U+0329, U+1EA0-1EF9, U+20AB;
+}
+/* latin-ext */
+@font-face {
+  font-family: 'Plus Jakarta Sans';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url(https://fonts.gstatic.com/s/plusjakartasans/v12/LDIoaomQNQcsA88c7O9yZ4KMCoOg4Ko40yyygA.woff2) format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C4, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+/* latin */
+@font-face {
+  font-family: 'Plus Jakarta Sans';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url("b2c14083-0f71-4adc-92f0-fb4f2b988a42") format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+/* cyrillic-ext */
+@font-face {
+  font-family: 'Plus Jakarta Sans';
+  font-style: normal;
+  font-weight: 800;
+  font-display: swap;
+  src: url(https://fonts.gstatic.com/s/plusjakartasans/v12/LDIoaomQNQcsA88c7O9yZ4KMCoOg4Ko70yyygA.woff2) format('woff2');
+  unicode-range: U+0460-052F, U+1C80-1C8A, U+20B4, U+2DE0-2DFF, U+A640-A69F, U+FE2E-FE2F;
+}
+/* vietnamese */
+@font-face {
+  font-family: 'Plus Jakarta Sans';
+  font-style: normal;
+  font-weight: 800;
+  font-display: swap;
+  src: url(https://fonts.gstatic.com/s/plusjakartasans/v12/LDIoaomQNQcsA88c7O9yZ4KMCoOg4Ko50yyygA.woff2) format('woff2');
+  unicode-range: U+0102-0103, U+0110-0111, U+0128-0129, U+0168-0169, U+01A0-01A1, U+01AF-01B0, U+0300-0301, U+0303-0304, U+0308-0309, U+0323, U+0329, U+1EA0-1EF9, U+20AB;
+}
+/* latin-ext */
+@font-face {
+  font-family: 'Plus Jakarta Sans';
+  font-style: normal;
+  font-weight: 800;
+  font-display: swap;
+  src: url(https://fonts.gstatic.com/s/plusjakartasans/v12/LDIoaomQNQcsA88c7O9yZ4KMCoOg4Ko40yyygA.woff2) format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C4, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+/* latin */
+@font-face {
+  font-family: 'Plus Jakarta Sans';
+  font-style: normal;
+  font-weight: 800;
+  font-display: swap;
+  src: url("b2c14083-0f71-4adc-92f0-fb4f2b988a42") format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+</style>
+<style>
+body{margin:0}
+.bk-root{
+  --font-sans:"Plus Jakarta Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --font-script:"Caveat","Segoe Print",cursive;
+  --space-1:4px;--space-2:8px;--space-3:12px;--space-4:16px;--space-5:20px;--space-6:24px;--space-8:32px;--space-10:40px;
+  --radius-sm:8px;--radius-md:12px;--radius-lg:16px;--radius-xl:24px;--radius-pill:999px;
+  --shadow-card:0 2px 8px rgba(60,30,90,0.08);--shadow-raised:0 10px 28px rgba(60,30,90,0.14);
+  --bg:#fbf5ec;--surface:#fffbf6;--tint:#f1e9fc;--tint-strong:#e2d3f7;--note:#fcebbd;--border:#eadfd2;--border-strong:#8a7d96;
+  --ink:#2a1a3d;--ink-muted:#5f5370;--plum:#2b1342;--on-plum:#f6eefc;--on-plum-muted:#cdbde0;
+  --violet-300:#a98be0;--on-violet-300:#2b1342;--primary:#6b46c1;--on-primary:#ffffff;--primary-deep:#351a5e;--on-primary-deep:#ffffff;
+  --success-bg:#dcf2e5;--success-ink:#1f6b47;--reading-bg:#e3defa;--reading-ink:#4a3bb0;--want-bg:#f7d7f0;--want-ink:#8f2f86;--rust:#b0481a;--focus:#6b46c1;
+  --series-fiction:#6b46c1;--series-nonfiction:#c8702a;
+}
+.bk-root[data-theme="dark"]{
+  --bg:#1a0f26;--surface:#251634;--tint:#2e1c42;--tint-strong:#43295f;--note:#4a3a1a;--border:#3d2b52;--border-strong:#8f7fa3;
+  --ink:#f6eefc;--ink-muted:#bcaecb;--plum:#3b2160;
+  --primary:#b89df2;--on-primary:#1a0f26;--primary-deep:#e3d4fb;--on-primary-deep:#1a0f26;
+  --success-bg:#1d3a2c;--success-ink:#8fdcb3;--reading-bg:#34285e;--reading-ink:#c3b8ff;--want-bg:#4a2347;--want-ink:#f0b4e8;--focus:#d9c6fa;
+  --series-fiction:#9474e0;--series-nonfiction:#c97a3a;
+}
+.bk-root .tile .bk-stat{background:transparent;border:0;box-shadow:none;padding:0;min-width:0}
+.bk-root .log th,.bk-root .log td{padding:12px 16px;text-align:left;border-bottom:1px solid var(--border)}
+.bk-root .log th{font:600 12px/16px var(--font-sans);color:var(--ink-muted)}
+.bk-root .log td{font:400 14px/20px var(--font-sans);color:var(--ink)}
+.bk-root .log tr:last-child td{border-bottom:0}
+.bk-root .log .num{text-align:right;font-variant-numeric:tabular-nums}
+</style>
+</helmet>
+<div class="bk-root" data-theme="{{theme}}" style="display: flex; flex-wrap: wrap; min-height: 1340px; background: var(--bg); color: var(--ink); font-family: var(--font-sans);">
+
+  <aside style="flex: 0 0 220px; box-sizing: border-box; background: var(--plum); color: var(--on-plum); padding: 28px 16px 24px; display: flex; flex-direction: column; gap: 4px;">
+    <div style="padding: 0 16px 20px;">
+      <p style="margin: 0; color: var(--on-plum); font-size: 28px; line-height: 1.14; font-weight: 600; letter-spacing: 0px; font-style: normal; font-family: &quot;Caveat&quot;, &quot;Segoe Print&quot;, cursive">Book Itch</p>
+    </div>
+    <nav aria-label="Main" style="display: flex; flex-direction: column; gap: 4px;">
+      <a class="bk-nav" href="Main.dc.html" style="box-sizing: border-box; text-decoration: none;"><svg width="18" height="18" sc-camel-view-box="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M3 11l9-8 9 8M5 10v10h14V10"></path></svg>Home</a>
+      <a class="bk-nav" href="MyBooks.dc.html" style="box-sizing: border-box; text-decoration: none;"><svg width="18" height="18" sc-camel-view-box="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M4 4h6a2 2 0 012 2v14a2 2 0 00-2-2H4zM20 4h-6a2 2 0 00-2 2v14a2 2 0 012-2h6z"></path></svg>My Books</a>
+      <x-import component-from-global-scope="Bookish.NavItem" icon="notes" style="display: block;">Notes &amp; Insights</x-import>
+      <a class="bk-nav bk-nav--active" aria-current="page" href="Stats.dc.html" style="box-sizing: border-box; text-decoration: none;"><svg width="18" height="18" sc-camel-view-box="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M5 20V10M12 20V4M19 20v-8"></path></svg>Stats</a>
+      <x-import component-from-global-scope="Bookish.NavItem" icon="library" style="display: block;">Library</x-import>
+      <a class="bk-nav" href="Settings.dc.html" style="box-sizing: border-box; text-decoration: none;"><svg width="18" height="18" sc-camel-view-box="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M12 15a3 3 0 100-6 3 3 0 000 6zM12 2v3M12 19v3M2 12h3M19 12h3"></path></svg>Settings</a>
+    </nav>
+    <div style="margin-top: auto; padding: 32px 16px 0; display: flex; flex-direction: column; gap: 8px;">
+      <p style="margin: 0; font: 500 22px/26px var(--font-script); color: var(--on-plum);">Same girl... new chapter</p>
+      <svg width="128" height="92" sc-camel-view-box="0 0 128 92" aria-hidden="true" focusable="false">
+        <rect x="14" y="62" width="104" height="22" rx="5" fill="#a98be0"></rect>
+        <rect x="22" y="40" width="94" height="22" rx="5" fill="#f0b4e8"></rect>
+        <rect x="10" y="20" width="96" height="20" rx="5" fill="#e3d4fb"></rect>
+        <rect x="26" y="2" width="70" height="18" rx="5" fill="#6b46c1"></rect>
+        <path d="M30 73h50M34 51h44M24 30h40" stroke="#2b1342" stroke-width="2" stroke-linecap="round" opacity="0.35"></path>
+      </svg>
+    </div>
+  </aside>
+
+  <main style="flex: 999 1 560px; min-width: 0; box-sizing: border-box; padding: 40px; display: flex; flex-direction: column; gap: 24px;">
+
+    <header style="display: flex; flex-wrap: wrap; align-items: flex-start; justify-content: space-between; gap: 16px 24px;">
+      <div style="flex: 1 1 280px;">
+        <h1 style="margin: 0; font: 700 28px/36px var(--font-sans); color: var(--ink);">Stats</h1>
+        <p style="margin: 4px 0 0; font: 400 14px/22px var(--font-sans); color: var(--ink-muted);">Your reading life, by the numbers.</p>
+      </div>
+      <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 16px;">
+        <div role="group" aria-label="Time range" style="display: flex; gap: 8px;">
+          <x-import component-from-global-scope="Bookish.FilterChip" active="{{yes}}">2026</x-import>
+          <x-import component-from-global-scope="Bookish.FilterChip">All time</x-import>
+        </div>
+        <x-import component-from-global-scope="Bookish.ThemeToggle" theme="{{theme}}" on-change="{{setTheme}}"></x-import>
+      </div>
+    </header>
+
+    <section aria-label="2026 at a glance" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px;">
+      <div class="tile" style="display: flex; align-items: center; gap: 12px; padding: 16px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); box-shadow: var(--shadow-card);">
+        <span style="flex: none; width: 44px; height: 44px; border-radius: var(--radius-md); background: var(--success-bg); color: var(--success-ink); display: inline-flex; align-items: center; justify-content: center;">
+          <svg width="22" height="22" sc-camel-view-box="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M5 12l5 5L20 7"></path></svg>
+        </span>
+        <x-import component-from-global-scope="Bookish.StatCard" value="5" label="Books finished in 2026" style="display: block; flex: 1; min-width: 0;"></x-import>
+      </div>
+      <div class="tile" style="display: flex; align-items: center; gap: 12px; padding: 16px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); box-shadow: var(--shadow-card);">
+        <span style="flex: none; width: 44px; height: 44px; border-radius: var(--radius-md); background: var(--tint-strong); color: var(--ink); display: inline-flex; align-items: center; justify-content: center;">
+          <svg width="22" height="22" sc-camel-view-box="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M12 2v7M12 15v7M2 12h7M15 12h7"></path></svg>
+        </span>
+        <x-import component-from-global-scope="Bookish.StatCard" value="3" label="Fiction books read" style="display: block; flex: 1; min-width: 0;"></x-import>
+        <span aria-hidden="true" style="width: 10px; height: 10px; border-radius: 3px; background: var(--series-fiction);"></span>
+      </div>
+      <div class="tile" style="display: flex; align-items: center; gap: 12px; padding: 16px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); box-shadow: var(--shadow-card);">
+        <span style="flex: none; width: 44px; height: 44px; border-radius: var(--radius-md); background: var(--note); color: var(--ink); display: inline-flex; align-items: center; justify-content: center;">
+          <svg width="22" height="22" sc-camel-view-box="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M9 18h6M10 21h4M12 3a6 6 0 00-4 10.5c.7.7 1 1.5 1 2.5h6c0-1 .3-1.8 1-2.5A6 6 0 0012 3z"></path></svg>
+        </span>
+        <x-import component-from-global-scope="Bookish.StatCard" value="2" label="Non-fiction books read" style="display: block; flex: 1; min-width: 0;"></x-import>
+        <span aria-hidden="true" style="width: 10px; height: 10px; border-radius: 3px; background: var(--series-nonfiction);"></span>
+      </div>
+      <div class="tile" style="display: flex; align-items: center; gap: 12px; padding: 16px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); box-shadow: var(--shadow-card);">
+        <span style="flex: none; width: 44px; height: 44px; border-radius: var(--radius-md); background: var(--reading-bg); color: var(--reading-ink); display: inline-flex; align-items: center; justify-content: center;">
+          <svg width="22" height="22" sc-camel-view-box="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="9"></circle><path d="M12 7v5l3 2"></path></svg>
+        </span>
+        <x-import component-from-global-scope="Bookish.StatCard" value="26 days" label="Average time to finish" style="display: block; flex: 1; min-width: 0;"></x-import>
+      </div>
+    </section>
+
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(380px, 1fr)); gap: 20px;">
+
+      <section aria-labelledby="per-month" style="padding: 20px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); box-shadow: var(--shadow-card); display: flex; flex-direction: column; gap: 16px;">
+        <div style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-start; gap: 8px 16px;">
+          <div>
+            <h2 id="per-month" style="margin: 0; font: 600 17px/24px var(--font-sans); color: var(--ink);">Books finished per month</h2>
+            <p style="margin: 0; font: 400 12px/18px var(--font-sans); color: var(--ink-muted);">2026 · one finished book every two months</p>
+          </div>
+          <div style="display: flex; gap: 12px; font: 400 12px/18px var(--font-sans); color: var(--ink-muted);">
+            <span style="display: inline-flex; align-items: center; gap: 6px;"><span style="width: 10px; height: 10px; border-radius: 3px; background: var(--series-fiction);"></span>Fiction</span>
+            <span style="display: inline-flex; align-items: center; gap: 6px;"><span style="width: 10px; height: 10px; border-radius: 3px; background: var(--series-nonfiction);"></span>Non-fiction</span>
+          </div>
+        </div>
+        <div style="display: flex; gap: 8px;">
+          <div aria-hidden="true" style="display: flex; flex-direction: column; justify-content: space-between; height: 160px; font: 400 11px/12px var(--font-sans); color: var(--ink-muted); text-align: right; width: 12px; margin-top: -6px;">
+            <span>2</span><span>1</span><span>0</span>
+          </div>
+          <div style="flex: 1; min-width: 0;">
+            <div role="img" aria-label="Books finished per month in 2026: January 1 non-fiction, March 1 fiction, May 1 non-fiction, July 1 fiction, September 1 fiction; no books finished in other months." style="position: relative; height: 160px; border-bottom: 1px solid var(--border-strong); display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); gap: 8px; align-items: end;">
+              <div aria-hidden="true" style="position: absolute; left: 0; right: 0; top: 0; border-top: 1px dashed var(--border);"></div>
+              <div aria-hidden="true" style="position: absolute; left: 0; right: 0; top: 80px; border-top: 1px dashed var(--border);"></div>
+              <div title="January: 1 book (non-fiction) · Deep Work" style="position: relative; height: 78px; width: 60%; justify-self: center; border-radius: 4px 4px 0 0; background: var(--series-nonfiction);"></div>
+              <div title="February: 0 books"></div>
+              <div title="March: 1 book (fiction) · The Midnight Library" style="position: relative; height: 78px; width: 60%; justify-self: center; border-radius: 4px 4px 0 0; background: var(--series-fiction);"></div>
+              <div title="April: 0 books"></div>
+              <div title="May: 1 book (non-fiction) · Educated" style="position: relative; height: 78px; width: 60%; justify-self: center; border-radius: 4px 4px 0 0; background: var(--series-nonfiction);"></div>
+              <div title="June: 0 books"></div>
+              <div title="July: 1 book (fiction) · Dune" style="position: relative; height: 78px; width: 60%; justify-self: center; border-radius: 4px 4px 0 0; background: var(--series-fiction);"></div>
+              <div title="August: 0 books"></div>
+              <div title="September: 1 book (fiction) · The Seven Husbands of Evelyn Hugo" style="position: relative; height: 78px; width: 60%; justify-self: center; border-radius: 4px 4px 0 0; background: var(--series-fiction);"></div>
+              <div title="October: 0 books so far · Atomic Habits in progress"></div>
+              <div title="November: not yet"></div>
+              <div title="December: not yet"></div>
+            </div>
+            <div aria-hidden="true" style="display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); gap: 8px; margin-top: 8px; font: 400 11px/14px var(--font-sans); color: var(--ink-muted); text-align: center;">
+              <span>Jan</span><span>Feb</span><span>Mar</span><span>Apr</span><span>May</span><span>Jun</span><span>Jul</span><span>Aug</span><span>Sep</span><span style="font-weight: 700; color: var(--ink);">Oct</span><span>Nov</span><span>Dec</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section aria-labelledby="split" style="padding: 20px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); box-shadow: var(--shadow-card); display: flex; flex-direction: column; gap: 16px;">
+        <div>
+          <h2 id="split" style="margin: 0; font: 600 17px/24px var(--font-sans); color: var(--ink);">Fiction vs non-fiction</h2>
+          <p style="margin: 0; font: 400 12px/18px var(--font-sans); color: var(--ink-muted);">Books finished in 2026</p>
+        </div>
+        <div role="img" aria-label="Fiction 3 books, 60 percent; non-fiction 2 books, 40 percent" style="display: flex; gap: 2px; height: 16px;">
+          <div style="flex: 3; background: var(--series-fiction); border-radius: 999px 0 0 999px;"></div>
+          <div style="flex: 2; background: var(--series-nonfiction); border-radius: 0 999px 999px 0;"></div>
+        </div>
+        <div style="display: flex; justify-content: space-between; gap: 16px;">
+          <div>
+            <p style="margin: 0; display: flex; align-items: center; gap: 6px; font: 400 12px/18px var(--font-sans); color: var(--ink-muted);"><span style="width: 10px; height: 10px; border-radius: 3px; background: var(--series-fiction);"></span>Fiction</p>
+            <p style="margin: 0; font: 700 24px/30px var(--font-sans); color: var(--ink);">3 <span style="font: 400 14px/22px var(--font-sans); color: var(--ink-muted);">· 60%</span></p>
+          </div>
+          <div style="text-align: right;">
+            <p style="margin: 0; display: flex; align-items: center; justify-content: flex-end; gap: 6px; font: 400 12px/18px var(--font-sans); color: var(--ink-muted);"><span style="width: 10px; height: 10px; border-radius: 3px; background: var(--series-nonfiction);"></span>Non-fiction</p>
+            <p style="margin: 0; font: 700 24px/30px var(--font-sans); color: var(--ink);">2 <span style="font: 400 14px/22px var(--font-sans); color: var(--ink-muted);">· 40%</span></p>
+          </div>
+        </div>
+        <div style="border-top: 1px solid var(--border); padding-top: 16px; display: flex; flex-direction: column; gap: 8px;">
+          <div style="display: flex; justify-content: space-between; align-items: baseline; gap: 12px;">
+            <h3 style="margin: 0; font: 600 14px/20px var(--font-sans); color: var(--ink);">2026 reading goal</h3>
+            <span style="font: 400 12px/18px var(--font-sans); color: var(--ink-muted);">5 of 12 books · 7 to go</span>
+          </div>
+          <x-import component-from-global-scope="Bookish.ProgressBar" value="{{goal}}" label="2026 reading goal progress" style="display: block;"></x-import>
+          <p style="margin: 4px 0 0; font: 500 22px/26px var(--font-script); color: var(--ink);">Every page counts</p>
+        </div>
+      </section>
+
+      <section aria-labelledby="per-year" style="padding: 20px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); box-shadow: var(--shadow-card); display: flex; flex-direction: column; gap: 16px;">
+        <div style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-start; gap: 8px 16px;">
+          <div>
+            <h2 id="per-year" style="margin: 0; font: 600 17px/24px var(--font-sans); color: var(--ink);">Books finished per year</h2>
+            <p style="margin: 0; font: 400 12px/18px var(--font-sans); color: var(--ink-muted);">38 books since 2023</p>
+          </div>
+          <div style="display: flex; gap: 12px; font: 400 12px/18px var(--font-sans); color: var(--ink-muted);">
+            <span style="display: inline-flex; align-items: center; gap: 6px;"><span style="width: 10px; height: 10px; border-radius: 3px; background: var(--series-fiction);"></span>Fiction</span>
+            <span style="display: inline-flex; align-items: center; gap: 6px;"><span style="width: 10px; height: 10px; border-radius: 3px; background: var(--series-nonfiction);"></span>Non-fiction</span>
+          </div>
+        </div>
+        <div role="img" aria-label="Books finished per year: 2023, 8 (5 fiction, 3 non-fiction); 2024, 11 (6 fiction, 5 non-fiction); 2025, 14 (8 fiction, 6 non-fiction); 2026 so far, 5 (3 fiction, 2 non-fiction)." style="height: 184px; border-bottom: 1px solid var(--border-strong); display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 24px; align-items: end;">
+          <div title="2023: 8 books (5 fiction, 3 non-fiction)" style="display: flex; flex-direction: column; align-items: center; gap: 2px;">
+            <span style="font: 600 12px/16px var(--font-sans); color: var(--ink); margin-bottom: 4px;">8</span>
+            <div style="width: 48px; height: 30px; border-radius: 4px 4px 0 0; background: var(--series-nonfiction);"></div>
+            <div style="width: 48px; height: 50px; background: var(--series-fiction);"></div>
+          </div>
+          <div title="2024: 11 books (6 fiction, 5 non-fiction)" style="display: flex; flex-direction: column; align-items: center; gap: 2px;">
+            <span style="font: 600 12px/16px var(--font-sans); color: var(--ink); margin-bottom: 4px;">11</span>
+            <div style="width: 48px; height: 50px; border-radius: 4px 4px 0 0; background: var(--series-nonfiction);"></div>
+            <div style="width: 48px; height: 60px; background: var(--series-fiction);"></div>
+          </div>
+          <div title="2025: 14 books (8 fiction, 6 non-fiction)" style="display: flex; flex-direction: column; align-items: center; gap: 2px;">
+            <span style="font: 600 12px/16px var(--font-sans); color: var(--ink); margin-bottom: 4px;">14</span>
+            <div style="width: 48px; height: 60px; border-radius: 4px 4px 0 0; background: var(--series-nonfiction);"></div>
+            <div style="width: 48px; height: 80px; background: var(--series-fiction);"></div>
+          </div>
+          <div title="2026 so far: 5 books (3 fiction, 2 non-fiction)" style="display: flex; flex-direction: column; align-items: center; gap: 2px;">
+            <span style="font: 600 12px/16px var(--font-sans); color: var(--ink); margin-bottom: 4px;">5</span>
+            <div style="width: 48px; height: 20px; border-radius: 4px 4px 0 0; background: var(--series-nonfiction);"></div>
+            <div style="width: 48px; height: 30px; background: var(--series-fiction);"></div>
+          </div>
+        </div>
+        <div aria-hidden="true" style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 24px; margin-top: -8px; font: 400 12px/16px var(--font-sans); color: var(--ink-muted); text-align: center;">
+          <span>2023</span><span>2024</span><span>2025</span><span style="font-weight: 700; color: var(--ink);">2026 so far</span>
+        </div>
+      </section>
+
+      <section aria-labelledby="time-to-finish" style="padding: 20px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); box-shadow: var(--shadow-card); display: flex; flex-direction: column; gap: 16px;">
+        <div>
+          <h2 id="time-to-finish" style="margin: 0; font: 600 17px/24px var(--font-sans); color: var(--ink);">Time to finish</h2>
+          <p style="margin: 0; font: 400 12px/18px var(--font-sans); color: var(--ink-muted);">Days from start to finish · average 26 days</p>
+        </div>
+        <div role="img" aria-label="Days to finish: Dune 47, Educated 36, The Seven Husbands of Evelyn Hugo 19, Deep Work 17, The Midnight Library 12." style="display: flex; flex-direction: column; gap: 12px;">
+          <div title="Dune · fiction · 47 days" style="display: grid; grid-template-columns: 150px minmax(0, 1fr); gap: 12px; align-items: center;">
+            <span style="font: 400 12px/16px var(--font-sans); color: var(--ink); overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">Dune</span>
+            <div style="display: flex; align-items: center; gap: 8px;"><div style="width: 94%; height: 14px; border-radius: 0 4px 4px 0; background: var(--series-fiction);"></div><span style="font: 600 12px/16px var(--font-sans); color: var(--ink); white-space: nowrap;">47</span></div>
+          </div>
+          <div title="Educated · non-fiction · 36 days" style="display: grid; grid-template-columns: 150px minmax(0, 1fr); gap: 12px; align-items: center;">
+            <span style="font: 400 12px/16px var(--font-sans); color: var(--ink); overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">Educated</span>
+            <div style="display: flex; align-items: center; gap: 8px;"><div style="width: 72%; height: 14px; border-radius: 0 4px 4px 0; background: var(--series-nonfiction);"></div><span style="font: 600 12px/16px var(--font-sans); color: var(--ink); white-space: nowrap;">36</span></div>
+          </div>
+          <div title="The Seven Husbands of Evelyn Hugo · fiction · 19 days" style="display: grid; grid-template-columns: 150px minmax(0, 1fr); gap: 12px; align-items: center;">
+            <span style="font: 400 12px/16px var(--font-sans); color: var(--ink); overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">The Seven Husbands of Evelyn Hugo</span>
+            <div style="display: flex; align-items: center; gap: 8px;"><div style="width: 38%; height: 14px; border-radius: 0 4px 4px 0; background: var(--series-fiction);"></div><span style="font: 600 12px/16px var(--font-sans); color: var(--ink); white-space: nowrap;">19</span></div>
+          </div>
+          <div title="Deep Work · non-fiction · 17 days" style="display: grid; grid-template-columns: 150px minmax(0, 1fr); gap: 12px; align-items: center;">
+            <span style="font: 400 12px/16px var(--font-sans); color: var(--ink); overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">Deep Work</span>
+            <div style="display: flex; align-items: center; gap: 8px;"><div style="width: 34%; height: 14px; border-radius: 0 4px 4px 0; background: var(--series-nonfiction);"></div><span style="font: 600 12px/16px var(--font-sans); color: var(--ink); white-space: nowrap;">17</span></div>
+          </div>
+          <div title="The Midnight Library · fiction · 12 days" style="display: grid; grid-template-columns: 150px minmax(0, 1fr); gap: 12px; align-items: center;">
+            <span style="font: 400 12px/16px var(--font-sans); color: var(--ink); overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">The Midnight Library</span>
+            <div style="display: flex; align-items: center; gap: 8px;"><div style="width: 24%; height: 14px; border-radius: 0 4px 4px 0; background: var(--series-fiction);"></div><span style="font: 600 12px/16px var(--font-sans); color: var(--ink); white-space: nowrap;">12</span></div>
+          </div>
+        </div>
+        <div style="display: flex; flex-wrap: wrap; gap: 8px 24px; padding-top: 12px; border-top: 1px solid var(--border); font: 400 12px/18px var(--font-sans); color: var(--ink-muted);">
+          <span>Fastest: <strong style="color: var(--ink); font-weight: 600;">The Midnight Library, 12 days</strong></span>
+          <span>Longest: <strong style="color: var(--ink); font-weight: 600;">Dune, 47 days</strong></span>
+        </div>
+      </section>
+    </div>
+
+    <section aria-labelledby="log" style="background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); box-shadow: var(--shadow-card); overflow: hidden;">
+      <div style="padding: 20px 20px 8px;">
+        <h2 id="log" style="margin: 0; font: 600 17px/24px var(--font-sans); color: var(--ink);">Reading log</h2>
+        <p style="margin: 0; font: 400 12px/18px var(--font-sans); color: var(--ink-muted);">Start and finish dates for every book in 2026</p>
+      </div>
+      <div style="overflow-x: auto;">
+        <sc-raw-table class="log" style="width: 100%; min-width: 640px; border-collapse: collapse;">
+          <sc-raw-thead>
+            <sc-raw-tr><sc-raw-th scope="col">Book</sc-raw-th><sc-raw-th scope="col">Type</sc-raw-th><sc-raw-th scope="col">Started</sc-raw-th><sc-raw-th scope="col">Finished</sc-raw-th><sc-raw-th scope="col" class="num">Days to finish</sc-raw-th></sc-raw-tr>
+          </sc-raw-thead>
+          <sc-raw-tbody>
+            <sc-raw-tr>
+              <sc-raw-td><span style="font-weight: 600;">Atomic Habits</span><br><span style="font-size: 12px; color: var(--ink-muted);">James Clear</span></sc-raw-td>
+              <sc-raw-td><span style="display: inline-flex; align-items: center; gap: 6px;"><span style="width: 10px; height: 10px; border-radius: 3px; background: var(--series-nonfiction);"></span>Non-fiction</span></sc-raw-td>
+              <sc-raw-td>12 Oct 2026</sc-raw-td>
+              <sc-raw-td><x-import component-from-global-scope="Bookish.Badge" tone="reading"></x-import></sc-raw-td>
+              <sc-raw-td class="num">16 so far</sc-raw-td>
+            </sc-raw-tr>
+            <sc-raw-tr>
+              <sc-raw-td><span style="font-weight: 600;">The Seven Husbands of Evelyn Hugo</span><br><span style="font-size: 12px; color: var(--ink-muted);">Taylor Jenkins Reid</span></sc-raw-td>
+              <sc-raw-td><span style="display: inline-flex; align-items: center; gap: 6px;"><span style="width: 10px; height: 10px; border-radius: 3px; background: var(--series-fiction);"></span>Fiction</span></sc-raw-td>
+              <sc-raw-td>15 Aug 2026</sc-raw-td>
+              <sc-raw-td>3 Sep 2026</sc-raw-td>
+              <sc-raw-td class="num">19</sc-raw-td>
+            </sc-raw-tr>
+            <sc-raw-tr>
+              <sc-raw-td><span style="font-weight: 600;">Dune</span><br><span style="font-size: 12px; color: var(--ink-muted);">Frank Herbert</span></sc-raw-td>
+              <sc-raw-td><span style="display: inline-flex; align-items: center; gap: 6px;"><span style="width: 10px; height: 10px; border-radius: 3px; background: var(--series-fiction);"></span>Fiction</span></sc-raw-td>
+              <sc-raw-td>1 Jun 2026</sc-raw-td>
+              <sc-raw-td>18 Jul 2026</sc-raw-td>
+              <sc-raw-td class="num">47</sc-raw-td>
+            </sc-raw-tr>
+            <sc-raw-tr>
+              <sc-raw-td><span style="font-weight: 600;">Educated</span><br><span style="font-size: 12px; color: var(--ink-muted);">Tara Westover</span></sc-raw-td>
+              <sc-raw-td><span style="display: inline-flex; align-items: center; gap: 6px;"><span style="width: 10px; height: 10px; border-radius: 3px; background: var(--series-nonfiction);"></span>Non-fiction</span></sc-raw-td>
+              <sc-raw-td>20 Apr 2026</sc-raw-td>
+              <sc-raw-td>26 May 2026</sc-raw-td>
+              <sc-raw-td class="num">36</sc-raw-td>
+            </sc-raw-tr>
+            <sc-raw-tr>
+              <sc-raw-td><span style="font-weight: 600;">The Midnight Library</span><br><span style="font-size: 12px; color: var(--ink-muted);">Matt Haig</span></sc-raw-td>
+              <sc-raw-td><span style="display: inline-flex; align-items: center; gap: 6px;"><span style="width: 10px; height: 10px; border-radius: 3px; background: var(--series-fiction);"></span>Fiction</span></sc-raw-td>
+              <sc-raw-td>2 Mar 2026</sc-raw-td>
+              <sc-raw-td>14 Mar 2026</sc-raw-td>
+              <sc-raw-td class="num">12</sc-raw-td>
+            </sc-raw-tr>
+            <sc-raw-tr>
+              <sc-raw-td><span style="font-weight: 600;">Deep Work</span><br><span style="font-size: 12px; color: var(--ink-muted);">Cal Newport</span></sc-raw-td>
+              <sc-raw-td><span style="display: inline-flex; align-items: center; gap: 6px;"><span style="width: 10px; height: 10px; border-radius: 3px; background: var(--series-nonfiction);"></span>Non-fiction</span></sc-raw-td>
+              <sc-raw-td>4 Jan 2026</sc-raw-td>
+              <sc-raw-td>21 Jan 2026</sc-raw-td>
+              <sc-raw-td class="num">17</sc-raw-td>
+            </sc-raw-tr>
+          </sc-raw-tbody>
+        </sc-raw-table>
+      </div>
+    </section>
+
+  </main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script="" data-props="{&quot;$preview&quot;:{&quot;width&quot;:1440,&quot;height&quot;:1340}}">
+class Component extends DCLogic {
+  renderVals() {
+    const theme = (this.state && this.state.theme) || 'light';
+    return {
+      theme: theme,
+      yes: true,
+      goal: 42,
+      setTheme: (t) => this.setState({ theme: t })
+    };
+  }
+}
+</script>
+
+
+</body></html>
