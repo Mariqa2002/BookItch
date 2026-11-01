@@ -26,7 +26,7 @@ createRoot(document.getElementById('root')!).render(
       <AuthProvider>
         <AuthGate>
           <LibraryProvider>
-            <BrowserRouter>
+            <BrowserRouter basename={import.meta.env.BASE_URL}>
               <App />
             </BrowserRouter>
           </LibraryProvider>
