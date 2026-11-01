@@ -4,18 +4,18 @@ import {
   BarChart3,
   Settings as SettingsIcon,
   NotebookPen,
-  Library,
 } from "lucide-react";
 import { useLocation, Link } from "react-router-dom";
-import { NavItem, NavItemDisabled } from "@/components/bookish";
+import { NavItem } from "@/components/bookish";
 import { BookshelfDoodle } from "@/components/icons/Doodles";
 
 /**
  * The plum sidebar from design/pages/home.html (and my-books.html,
- * stats.html). "Notes & Insights" and "Library" are shown-but-inert —
- * the design references them via Bookish.NavItem with no href, i.e.
- * sections that exist in the design system but weren't built as pages
- * in this canvas. See ACTIONS.md.
+ * stats.html). The design referenced "Notes & Insights" and "Library"
+ * via Bookish.NavItem with no href — sections that existed in the design
+ * system but weren't built as pages in that canvas. "Notes & Insights" is
+ * now a real page (src/pages/NotesInsights.tsx); "Library" was dropped
+ * since it would have served the same purpose as "My Books". See ACTIONS.md.
  */
 export function Sidebar() {
   const location = useLocation();
@@ -49,7 +49,8 @@ export function Sidebar() {
         >
           My Books
         </NavItem>
-        <NavItemDisabled
+        <NavItem
+          to="/notes"
           icon={
             <NotebookPen
               width={18}
@@ -60,7 +61,7 @@ export function Sidebar() {
           }
         >
           Notes &amp; Insights
-        </NavItemDisabled>
+        </NavItem>
         <NavItem
           to="/stats"
           icon={
@@ -74,18 +75,6 @@ export function Sidebar() {
         >
           Stats
         </NavItem>
-        <NavItemDisabled
-          icon={
-            <Library
-              width={18}
-              height={18}
-              strokeWidth={2}
-              aria-hidden="true"
-            />
-          }
-        >
-          Library
-        </NavItemDisabled>
         <Link
           to="/settings"
           state={{ backgroundLocation: location }}

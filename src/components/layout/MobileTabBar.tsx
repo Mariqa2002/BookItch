@@ -1,4 +1,4 @@
-import { Home, BookOpen, BarChart3, Settings as SettingsIcon } from 'lucide-react'
+import { Home, BookOpen, NotebookPen, BarChart3, Settings as SettingsIcon } from 'lucide-react'
 import { NavLink, useLocation, Link } from 'react-router-dom'
 import { cn } from '@/lib/cn'
 
@@ -29,6 +29,10 @@ export function MobileTabBar() {
       <NavLink to="/books" className={itemClass}>
         <BookOpen width={20} height={20} strokeWidth={2} aria-hidden="true" />
         My Books
+      </NavLink>
+      <NavLink to="/notes" className={itemClass}>
+        <NotebookPen width={20} height={20} strokeWidth={2} aria-hidden="true" />
+        Notes
       </NavLink>
       <NavLink to="/stats" className={itemClass}>
         <BarChart3 width={20} height={20} strokeWidth={2} aria-hidden="true" />

@@ -11,13 +11,3 @@ export function NavItem({ to, icon, children }: { to: string; icon: ReactNode; c
     </NavLink>
   )
 }
-
-/** A nav item for a section that isn't built yet — shown, but inert. */
-export function NavItemDisabled({ icon, children, title }: { icon: ReactNode; children: ReactNode; title?: string }) {
-  return (
-    <span className="bk-nav bk-nav--disabled" role="link" aria-disabled="true" title={title ?? 'Coming soon'}>
-      {icon}
-      {children}
-    </span>
-  )
-}

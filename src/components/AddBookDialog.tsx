@@ -1,25 +1,63 @@
-import { useState, type FormEvent } from 'react'
-import { X } from 'lucide-react'
+import { useRef, useState, type ChangeEvent, type FormEvent } from 'react'
+import { Image as ImageIcon, X } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { ModalOverlay } from './layout/ModalOverlay'
 import { Button, Select } from './bookish'
+import { BookCover } from './bookish/BookCover'
 import { useLibrary } from '@/data/store'
+import { fetchChapterTitles } from '@/lib/bookSearch'
+import { fileToCoverDataUrl } from '@/lib/image'
+import { toInitialCaps } from '@/lib/text'
 import type { Genre } from '@/data/types'
 
 export function AddBookDialog({ onClose }: { onClose: () => void }) {
-  const { addBook } = useLibrary()
+  const { addBook, addChapter } = useLibrary()
   const navigate = useNavigate()
+  const fileInputRef = useRef<HTMLInputElement>(null)
   const [title, setTitle] = useState('')
   const [author, setAuthor] = useState('')
   const [subtitle, setSubtitle] = useState('')
   const [genre, setGenre] = useState<Genre>('non-fiction')
+  const [coverUrl, setCoverUrl] = useState<string | undefined>(undefined)
+  const [coverError, setCoverError] = useState<string | null>(null)
+  const [processingCover, setProcessingCover] = useState(false)
+
+  async function handleCoverChange(e: ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0]
+    e.target.value = ''
+    if (!file) return
+    setProcessingCover(true)
+    setCoverError(null)
+    try {
+      setCoverUrl(await fileToCoverDataUrl(file))
+    } catch {
+      setCoverError("Couldn't read that image — try a different file.")
+    } finally {
+      setProcessingCover(false)
+    }
+  }
 
   function handleSubmit(e: FormEvent) {
     e.preventDefault()
-    if (!title.trim() || !author.trim()) return
-    const book = addBook({ title: title.trim(), author: author.trim(), subtitle: subtitle.trim() || undefined, genre })
+    const trimmedTitle = title.trim()
+    const trimmedAuthor = author.trim()
+    if (!trimmedTitle || !trimmedAuthor) return
+
+    const book = addBook({
+      title: trimmedTitle,
+      author: trimmedAuthor,
+      subtitle: subtitle.trim() || undefined,
+      genre,
+      coverUrl,
+    })
     onClose()
     navigate(`/books/${book.id}`)
+
+    // Best-effort: preload chapter titles from Open Library in the background.
+    // Most books won't have table-of-contents data, so finding nothing is normal.
+    fetchChapterTitles(trimmedTitle, trimmedAuthor).then((titles) => {
+      for (const chapterTitle of titles) addChapter(book.id, toInitialCaps(chapterTitle))
+    })
   }
 
   return (
@@ -42,6 +80,31 @@ export function AddBookDialog({ onClose }: { onClose: () => void }) {
       </header>
 
       <form onSubmit={handleSubmit} className="flex flex-col gap-4 overflow-y-auto px-6 py-5">
+        <div className="flex items-start gap-4">
+          <BookCover title={title || 'New book'} coverUrl={coverUrl} tone="tint" className="h-[112px] w-[84px] shrink-0" />
+          <div className="flex min-w-0 flex-1 flex-col gap-1.5">
+            <span className="set-label">Cover (optional)</span>
+            <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={handleCoverChange} />
+            <div className="flex flex-wrap gap-2">
+              <Button
+                variant="soft"
+                type="button"
+                icon={<ImageIcon size={14} strokeWidth={2} aria-hidden="true" />}
+                onClick={() => fileInputRef.current?.click()}
+                disabled={processingCover}
+              >
+                {processingCover ? 'Processing…' : coverUrl ? 'Change image' : 'Upload image'}
+              </Button>
+              {coverUrl && (
+                <Button variant="ghost" type="button" onClick={() => setCoverUrl(undefined)}>
+                  Remove
+                </Button>
+              )}
+            </div>
+            {coverError && <p className="m-0 font-sans text-xs text-rust">{coverError}</p>}
+          </div>
+        </div>
+
         <label className="flex flex-col gap-1.5">
           <span className="set-label">Title</span>
           <input

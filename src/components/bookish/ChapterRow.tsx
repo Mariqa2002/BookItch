@@ -15,32 +15,61 @@ export function ChapterRow({
   note,
   state,
   to,
+  onToggleDone,
 }: {
   title: string
   note?: string
   state: ChapterState
   to?: string
+  /** When given, the dot becomes a real checkbox for marking the chapter finished. */
+  onToggleDone?: () => void
 }) {
-  const content = (
+  const done = state === 'done'
+
+  const dot = onToggleDone ? (
+    <button
+      type="button"
+      role="checkbox"
+      aria-checked={done}
+      aria-label={done ? `Mark "${title}" as not finished` : `Mark "${title}" as finished`}
+      onClick={(e) => {
+        e.preventDefault()
+        e.stopPropagation()
+        onToggleDone()
+      }}
+      className={cn(
+        'bk-dot',
+        done && 'bk-dot--done',
+        'cursor-pointer transition-transform hover:scale-110 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus',
+      )}
+    >
+      {done && <Check size={11} strokeWidth={3} />}
+    </button>
+  ) : (
+    <span className={cn('bk-dot', done && 'bk-dot--done')} aria-hidden="true">
+      {done && <Check size={11} strokeWidth={3} />}
+    </span>
+  )
+
+  const text = (
     <>
-      <span className={cn('bk-dot', state === 'done' && 'bk-dot--done')} aria-hidden="true">
-        {state === 'done' && <Check size={11} strokeWidth={3} />}
-      </span>
-      <div className="bk-chap__main">
-        <p className="bk-chap__t">{title}</p>
-        <p className="bk-chap__s">{note ?? NOTE_BY_STATE[state]}</p>
-      </div>
+      <p className="bk-chap__t">{title}</p>
+      <p className="bk-chap__s">{note ?? NOTE_BY_STATE[state]}</p>
     </>
   )
 
-  const className = cn('bk-chap', state === 'current' && 'bk-chap--current')
+  const className = cn('bk-chap', state === 'current' && 'bk-chap--current', done && 'bk-chap--done')
 
-  if (to) {
-    return (
-      <Link to={to} className={className} style={{ textDecoration: 'none' }}>
-        {content}
-      </Link>
-    )
-  }
-  return <div className={className}>{content}</div>
+  return (
+    <div className={className}>
+      {dot}
+      {to ? (
+        <Link to={to} className="bk-chap__main cursor-pointer" style={{ textDecoration: 'none', color: 'inherit' }}>
+          {text}
+        </Link>
+      ) : (
+        <div className="bk-chap__main">{text}</div>
+      )}
+    </div>
+  )
 }

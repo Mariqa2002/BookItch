@@ -1,4 +1,4 @@
-import type { Book, LegacyYearTotal } from '@/data/types'
+import type { Book, Chapter, LegacyYearTotal } from '@/data/types'
 import { daysBetween, parseISODate } from './dates'
 
 export function currentYear(): number {
@@ -138,4 +138,24 @@ export function totalNotesCount(books: Book[]): number {
     (sum, b) => sum + b.chapters.reduce((s, c) => s + c.notes.length + (c.reflection ? 1 : 0) + c.keyTakeaways.length, 0),
     0,
   )
+}
+
+export interface BookNotesEntry {
+  bookId: string
+  title: string
+  author: string
+  /** Only the chapters that actually have a reflection, a note, or a takeaway. */
+  chapters: Chapter[]
+}
+
+/** Every book's notes, reflections, and key takeaways, grouped by book — for the Notes & Insights page. */
+export function collectBookNotes(books: Book[]): BookNotesEntry[] {
+  return books
+    .map((book) => ({
+      bookId: book.id,
+      title: book.title,
+      author: book.author,
+      chapters: book.chapters.filter((c) => c.reflection.trim() || c.notes.length > 0 || c.keyTakeaways.length > 0),
+    }))
+    .filter((entry) => entry.chapters.length > 0)
 }

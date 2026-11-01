@@ -4,3 +4,9 @@ dist-ssr
 *.local
 .DS_Store
 npm-debug.log*
+*.tsbuildinfo
+
+# Supabase credentials — see .env.example
+.env
+.env.*
+!.env.example

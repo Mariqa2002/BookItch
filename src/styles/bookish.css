@@ -95,6 +95,7 @@
   overflow: hidden;
 }
 .bk-progress__fill {
+  display: block;
   height: 100%;
   border-radius: var(--radius-pill);
   background: var(--primary-deep);
@@ -307,6 +308,12 @@
 .bk-chap--current {
   background: var(--tint);
 }
+.bk-chap--done {
+  background: color-mix(in srgb, var(--ink-muted) 14%, var(--surface));
+}
+.bk-chap--done:hover {
+  background: color-mix(in srgb, var(--ink-muted) 20%, var(--surface));
+}
 .bk-chap__main {
   flex: 1;
   min-width: 0;
@@ -327,6 +334,9 @@
   align-items: center;
   justify-content: center;
   flex: none;
+  border: 0;
+  padding: 0;
+  background: transparent;
 }
 .bk-dot--done {
   background: var(--success-ink);

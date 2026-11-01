@@ -4,6 +4,7 @@ import Home from '@/pages/Home'
 import MyBooks from '@/pages/MyBooks'
 import BookDetail from '@/pages/BookDetail'
 import ChapterPage from '@/pages/ChapterPage'
+import NotesInsights from '@/pages/NotesInsights'
 import Stats from '@/pages/Stats'
 import Settings from '@/pages/Settings'
 
@@ -24,6 +25,7 @@ export default function App() {
           <Route path="/books" element={<MyBooks />} />
           <Route path="/books/:bookId" element={<BookDetail />} />
           <Route path="/books/:bookId/chapters/:chapterId" element={<ChapterPage />} />
+          <Route path="/notes" element={<NotesInsights />} />
           <Route path="/stats" element={<Stats />} />
           {/* Settings is also reachable directly (e.g. a bookmark or refresh) —
               it still renders, just without a background page flipping in behind it. */}

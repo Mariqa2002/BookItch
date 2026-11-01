@@ -4,12 +4,14 @@ import { ModalOverlay } from '@/components/layout/ModalOverlay'
 import { Button, FilterChip, Select, Switch } from '@/components/bookish'
 import { useLibrary } from '@/data/store'
 import { useTheme } from '@/lib/theme'
+import { useAuth } from '@/lib/auth'
 import type { ReadingStatus } from '@/data/types'
 
 export default function Settings() {
   const navigate = useNavigate()
-  const { settings, updateSettings } = useLibrary()
+  const { books, settings, updateSettings } = useLibrary()
   const { mode, setMode } = useTheme()
+  const { session, signOut } = useAuth()
 
   function close() {
     navigate(-1)
@@ -35,6 +37,21 @@ export default function Settings() {
       </header>
 
       <div className="min-h-0 flex-1 overflow-y-auto px-7 pb-5">
+        <section aria-labelledby="s-account">
+          <h2 id="s-account" className="set-h">
+            Account
+          </h2>
+          <div className="set-row">
+            <div>
+              <p className="set-label">Signed in as</p>
+              <p className="set-desc">{session?.user.email}</p>
+            </div>
+            <Button variant="soft" onClick={() => signOut()}>
+              Sign out
+            </Button>
+          </div>
+        </section>
+
         <section aria-labelledby="s-profile">
           <h2 id="s-profile" className="set-h">
             Profile
@@ -218,8 +235,8 @@ export default function Settings() {
   function exportData() {
     const payload = {
       exportedAt: new Date().toISOString(),
-      books: JSON.parse(window.localStorage.getItem('book-itch:books') ?? '[]'),
-      settings: JSON.parse(window.localStorage.getItem('book-itch:settings') ?? '{}'),
+      books,
+      settings,
     }
     const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' })
     const url = URL.createObjectURL(blob)

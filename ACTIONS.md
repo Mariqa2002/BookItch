@@ -325,6 +325,12 @@ yet (see §10).
 
 ## 9. Local-only data — a real limitation to know about
 
+**Update (2026-10-31): this section is now historical — see §13.** Once you
+created a GitHub repo and connected a Supabase account, the limitation below
+was removed: books, today's checklist, settings, and legacy year totals now
+live in Supabase, not `localStorage`. Left in place rather than rewritten
+because it accurately describes how the app worked up to that point.
+
 Everything you add or write (notes, expectations, new books, settings) is
 saved to the browser's `localStorage`, **not a server** — this is the
 "database will be configured later" the brief anticipated. Concretely, that
@@ -472,10 +478,407 @@ design/pages/*.html             (the 6 unwrapped pages — kept as the
 
 ---
 
+## 13. Supabase backend, Auth, and removing localStorage
+
+Once you had a GitHub repo pushed and a Supabase account connected, you
+asked for: a real database behind the app, a migrations folder you can see
+the history of, `localStorage` removed, and to be told about any
+authorization this needs. Here's everything that changed.
+
+### Auth — asked first, not assumed
+
+The app had no login at all before this. Moving data server-side raises a
+real question: should anyone with the (public, unavoidably-extractable)
+Supabase anon key be able to read/write your books, or should it be locked
+to just you? I asked rather than picking — you chose **Supabase Auth with
+a real sign-in**, over the simpler "no login, open anon-key access" option.
+Concretely that means:
+
+- `src/pages/Login.tsx` — a sign-in/sign-up screen (email + password),
+  shown whenever there's no session.
+- `src/lib/auth.tsx` — `AuthProvider`/`useAuth`, wrapping
+  `supabase.auth.{getSession, onAuthStateChange, signInWithPassword,
+  signUp, signOut}`.
+- `src/main.tsx` — a small `AuthGate` that renders `<Login />` when signed
+  out, and only mounts `LibraryProvider` (and therefore the rest of the
+  app) once a session exists — so every Supabase query the app makes is
+  already running as an authenticated user.
+- Settings → new **Account** section: shows the signed-in email, "Sign
+  out" button.
+
+### Schema and Row Level Security
+
+`supabase/migrations/20261030211342_init_schema.sql` creates four tables —
+`books`, `today_items`, `legacy_year_totals`, `settings` — every one with
+`user_id uuid references auth.users`, RLS **enabled**, and a single
+`for all using (auth.uid() = user_id) with check (auth.uid() = user_id)`
+policy. That's the actual access control: the anon key alone gets you
+nothing, Postgres itself refuses any row whose `user_id` isn't the caller's
+own `auth.uid()`, insert included.
+
+**Judgment call:** a book's `chapters` (and each chapter's notes) are
+stored as one `jsonb` column on the book row, not split into `chapters` /
+`chapter_notes` tables. Your in-memory model (`src/data/types.ts`) already
+treats `Chapter[]` as a nested array the UI reads and rewrites as a whole;
+mirroring that as jsonb meant `store.tsx`'s existing chapter logic (add,
+reflect, take notes) barely had to change shape, versus a full relational
+rewrite with joins for comparatively little benefit on an audience-of-one
+app. If you later want chapters queryable/filterable server-side
+independent of their book, that's the point where I'd split them out.
+
+**Judgment call:** the brief said "a `/migrations` folder" — I used
+`supabase/migrations/` (via `npx supabase init` + `npx supabase migration
+new`) rather than a bare root `/migrations`. Same goal (every schema change
+visible, in order), but this path is what the Supabase CLI and dashboard's
+GitHub integration both recognize, so `npx supabase db push` (or a GitHub
+auto-deploy hook, if you set one up later) works without reorganizing
+anything. Say so if you'd genuinely rather it live at the repo root.
+
+### Wiring the client
+
+- `src/lib/supabase.ts` — the client, built from `VITE_SUPABASE_URL` /
+  `VITE_SUPABASE_ANON_KEY` (throws a clear error at startup if either is
+  missing, rather than failing confusingly later).
+- `src/vite-env.d.ts` — typed those two env vars for `import.meta.env`.
+- `.env.example` — the two vars, placeholder values; `.env.local` (yours,
+  gitignored) holds the real ones.
+- `.gitignore` — added `.env` / `.env.*` (keeping `.env.example` tracked
+  via `!.env.example`) and `*.tsbuildinfo`, so credentials and build
+  artifacts can't land in a commit by accident.
+
+### `src/data/store.tsx` — rewritten against Supabase
+
+Same public API as before (`books`, `addBook`, `setBookStatus`,
+`addChapter`, `updateSettings`, …) — every page that calls `useLibrary()`
+needed **zero changes** — but the insides now talk to Supabase:
+
+- On mount (once a user is signed in), fetches `books` / `today_items` /
+  `legacy_year_totals` / `settings` for that `user_id` in parallel. If a
+  user has no `settings` row yet (first sign-in), one is inserted from
+  `defaultSettings` on the spot.
+- Every mutator (`addBook`, `setBookStatus`, `addChapter`, …) updates local
+  state immediately, then fires the matching Supabase `insert`/`update` in
+  the background (errors go to `console.error`, not swallowed — there's no
+  toast/error-banner system yet, so that's as far as failure handling goes
+  for now; flag if you want write failures surfaced in the UI).
+- **IDs got split by what they actually are.** `books.id` and
+  `today_items.id` are real Postgres `uuid` columns, so new books get a
+  proper `crypto.randomUUID()` (`makeRowId()`). Chapter and chapter-note
+  ids live *inside* the `chapters` jsonb blob, not as their own columns, so
+  they kept the old human-readable `ch-<random>` / `note-<random>` form
+  (`makeId()`) — nothing reads or constrains them as UUIDs.
+- `addBook` still returns the new `Book` synchronously (so
+  `AddBookDialog.tsx`'s `navigate(/books/${book.id})` keeps working
+  unchanged) — the Supabase insert happens after, not awaited.
+- `src/data/seed.ts` shrank to just `defaultSettings` (the row created for
+  a brand-new user); `seedBooks` / `seedTodayItems` / `legacyYearTotals`
+  were already empty arrays from the earlier "blank slate" request and are
+  gone now that there's nowhere for seed data to seed *into* — books come
+  from Supabase or they don't exist yet.
+
+Settings → "Export notes & highlights" was reading `localStorage` directly;
+fixed to read `books`/`settings` off the context instead, so it still
+works now that nothing's in `localStorage` to read.
+
+### Theme is the one thing still in localStorage — on purpose
+
+`src/lib/theme.tsx` / `useLocalStorage.ts` were **not** touched. Two
+reasons: it's a device display preference, not reading data, so "sync it
+across devices" wasn't really the ask; and more concretely, `index.html`
+has a pre-paint script that reads it and sets `data-theme` *before React
+mounts*, specifically to avoid a flash of the wrong theme — that has to be
+synchronous and local, there's no network round-trip fast enough to beat
+first paint. **Flagging this as a judgment call, not a silent exception:**
+if you want it gone from `localStorage` too (e.g. moved into `settings` and
+fetched from Supabase), say so — it'd mean accepting a brief flash of the
+default theme on first load while that fetch resolves.
+
+### Applying the migration — what I could and couldn't do myself
+
+I have no standing credentials for your Supabase project, so this needed
+you in the loop:
+
+1. You generated a personal access token and gave me the project ref
+   (`edzxjyqtxhwhrwvguifb`). I ran `npx supabase link --project-ref …`,
+   then `npx supabase db push --dry-run` to show you exactly what would
+   change *before* running it for real, then `npx supabase db push
+   --linked` to actually apply it, then `npx supabase migration list` to
+   confirm the local and remote migration history now match.
+2. **I did not fetch your anon key for you**, even though the CLI has a
+   command for it (`supabase projects api-keys`) — Claude Code's own
+   permission layer blocked that call as "credential materialization" and
+   I didn't try to work around it. You pulled the anon key yourself from
+   the dashboard instead.
+3. I told you to **revoke that access token** once linking was done — it's
+   account-wide (no scoped-permission option exists on that token type),
+   so there's no reason to leave it live past the one setup step it was
+   needed for.
+
+### Unrelated fix made in passing
+
+`npm run build` was failing before I touched anything, on `vite.config.ts`
+using `node:path` / `__dirname` with no `@types/node` installed — a
+pre-existing gap, not something this work introduced. Added
+`@types/node` as a devDependency so I could actually verify the production
+build (otherwise I couldn't tell my own changes apart from this
+pre-existing break).
+
+### Verification performed
+
+- `npx tsc --noEmit` — clean.
+- `npm run build` — clean production build.
+- Started the real Vite dev server and fetched every new/changed module
+  (`main.tsx`, `Login.tsx`, `store.tsx`, `auth.tsx`, `supabase.ts`) through
+  it directly — all `200`, no transform-error overlay, confirming no
+  syntax/import mistakes slipped through type-checking.
+- `supabase db push --dry-run` output reviewed before the real push (one
+  migration, no surprises), then confirmed applied via `supabase migration
+  list` showing matching local/remote timestamps.
+
+### Judgment calls to review
+
+1. **Chapters as jsonb, not their own tables** — see above.
+2. **`supabase/migrations/` instead of a root `/migrations`** — see above.
+3. **Theme preference stays in `localStorage`** — see above.
+4. **Write failures only go to `console.error`** — optimistic local update
+   always wins immediately; if the background Supabase write fails, the UI
+   doesn't currently roll back or warn you, it just logs. Fine for now,
+   worth revisiting if you start hitting real write failures (e.g. offline
+   use).
+
+---
+
+## 14. Cover images, chapter preload, responsive Book/Chapter pages, the progress-bar bug, and the "finished" checkbox
+
+Seven requested changes, done together since they touched a lot of the same
+files (`BookDetail.tsx`, `ChapterPage.tsx`, `ChapterRow.tsx`, `DetailShell.tsx`).
+
+### Book cover upload
+
+`AddBookDialog` now has an image picker. On select, the file is drawn onto an
+in-memory `<canvas>`, downscaled to a max dimension of 640px, flattened onto
+a white background (so a transparent PNG doesn't turn black as a JPEG), and
+re-encoded as a JPEG data URL (`src/lib/image.ts`) — that string goes straight
+into `books.cover_url`, the existing text column. Because every place that
+already renders a cover (`BookCover`, used by `Home`, `BookCard`, `BookDetail`)
+reads from `book.coverUrl` with no special-casing, the cover now "just shows
+up everywhere" once it's set, with no other changes needed.
+
+**Judgment call:** images are stored as compressed data URLs in the existing
+`books` row, not in Supabase Storage. A Storage bucket would be the more
+scalable answer, but it means a new migration, bucket + RLS policies, and
+another CLI push — real cost for a personal, single-user app where a
+downscaled cover is a handful of KB. Worth moving to Storage later if covers
+get larger or more numerous than a `jsonb`/`text` column should reasonably hold.
+
+### Chapter preload from Open Library
+
+When a book is added, `src/lib/bookSearch.ts` fires a best-effort, non-blocking
+lookup against the free Open Library API: search by title/author, take the
+first match's editions, and check each for a `table_of_contents`. Whatever
+titles come back are run through `toInitialCaps()` (`src/lib/text.ts` —
+capitalizes the first letter of each word, leaves the rest alone) and added
+as chapters via the existing `addChapter`. The same normalization now also
+runs on chapters you type manually from the Book page, so naming stays
+consistent either way.
+
+**Judgment call / real limitation:** there is no reliable free API for
+"give me this book's chapter list." Open Library's table-of-contents field
+only exists for a minority of editions (mostly older/public-domain or
+well-catalogued non-fiction), so most books will come back with nothing —
+that's the expected, silent outcome, not a bug. This never blocks adding the
+book; it fully runs after you're already on the Book page.
+
+### Responsive Book and Chapter pages
+
+Both pages now widen past phone width instead of staying capped at a
+mobile-width column:
+
+- `DetailShell` gained a `maxWidthClassName` prop (same pattern `ModalOverlay`
+  already used) so each page controls its own max width instead of being
+  stuck at the shared `max-w-2xl`.
+- **Book page** (`lg:` and up): a sticky left column (cover, title, author,
+  dates, progress bar) next to a right column holding the tabs and their
+  content — using CSS grid (`lg:grid-cols-[260px_1fr]`), falling back to the
+  original stacked layout below that breakpoint.
+- **Chapter page** (`lg:` and up): status/Key Takeaways on the left, "What
+  I'm taking with me" + notes on the right, via `lg:grid-cols-2`.
+- The back link now gets a `hover:bg-tint hover:text-ink` fill, matching the
+  hover treatment already used elsewhere (the dialog close button, the
+  takeaway remove button) instead of having no hover state at all.
+
+### Progress bar fill — actual bug, now fixed
+
+`.bk-progress__fill` was a bare `<span>`, which defaults to `display: inline`.
+Browsers ignore `width`/`height` set on non-replaced inline elements — so the
+inline `style={{ width: '${percent}%' }}` was being set correctly every time,
+and silently doing nothing. That's exactly the symptom you saw: the percent
+label climbing while the bar itself stayed empty. Fix was one line —
+`display: block;` added to `.bk-progress__fill` in `bookish.css` — no
+component changes needed, since `ProgressBar.tsx` was already computing and
+applying the right value.
+
+### "Finished" moved to a checkbox on the Book page
+
+- `ChapterRow` (`src/components/bookish/ChapterRow.tsx`) now takes an optional
+  `onToggleDone`. When present, the `.bk-dot` renders as a real
+  `role="checkbox"` button (green fill, white check — the design's existing
+  `.bk-dot--done` styling, just made interactive) instead of a decorative
+  span, and sits next to the chapter `Link` rather than inside it (two nested
+  interactive elements in one `<a>` isn't valid markup).
+- Checking it calls `setChapterState(bookId, chapterId, 'done' | 'todo')` —
+  there's no separate "finished" flag in the data model, so unchecking returns
+  the chapter to `'todo'` rather than remembering it was `'current'` before.
+- A finished chapter's row now gets a muted fill (`.bk-chap--done`, blending
+  `--ink-muted` into the surface color via `color-mix()`) instead of the
+  plain `tint` used for "currently reading," so finished chapters read as
+  visually "done" at a glance.
+- The Chapter page's own status control no longer offers "Done" — only "To
+  read" / "Reading." If a chapter is already finished, that row shows a
+  read-only "Finished — toggle from the book's chapter list" badge instead,
+  so it's clear where the control moved rather than just disappearing.
+
+**Judgment call:** `color-mix()` is used for the "done" fill instead of a
+plain token color — it's supported in all current evergreen browsers, but if
+this ever needs to run somewhere older, that rule would need a flat fallback
+color.
+
+### Verification performed
+
+- `npx tsc --noEmit` — clean.
+- `npm run build` — clean production build.
+- Started the real Vite dev server and confirmed it serves the app; I could
+  not click through the authenticated pages myself (no browser tool available
+  in this environment, and the app is gated behind your Supabase login), so
+  the layout/interaction changes above are verified by code and markup
+  review, not by eyes-on in a running browser. Worth you checking the
+  Book/Chapter pages at a few widths yourself before considering this done.
+
+---
+
+## 15. Edit/delete a book, and an actual bug in the "finished" checkbox
+
+### The checkbox was never going to turn green — found and fixed
+
+You caught a real one: the checkbox added in §14 could render without its
+green fill. Root cause was a CSS cascade ordering issue, not a logic bug —
+`src/styles/index.css` imports `bookish.css` (home of `.bk-dot--done`,
+`background: var(--success-ink)`) *before* `@tailwind utilities`. The
+checkbox button also had Tailwind's `bg-transparent` utility class applied
+unconditionally (meant only to clear the browser's default button chrome for
+the *unchecked* state). Same specificity, later source position — Tailwind's
+utility won the tie every time, including when checked, so the green
+background was being silently overwritten by transparent right after it was
+set. The muted/ink-coloured look you saw was the row's own `.bk-chap--done`
+fill showing straight through the now-transparent checkbox.
+
+Fixed at the source instead of patching around it: moved the button reset
+(`border: 0; padding: 0; background: transparent;`) into the base `.bk-dot`
+rule in `bookish.css` itself, and removed the conflicting `border-0
+bg-transparent p-0` Tailwind classes from `ChapterRow.tsx`. Now `.bk-dot--done`
+(defined right after, same file) reliably wins on source order regardless of
+where Tailwind's generated utilities land in the bundle — the checkbox is
+green when checked, full stop. The chapter card's own ink-muted fill
+(`.bk-chap--done`) is untouched, exactly as you asked: checkbox green,
+card muted.
+
+### Edit and delete a book
+
+- **`deleteBook(id)`** added to `src/data/store.tsx` — removes the book from
+  local state immediately and issues a background `DELETE` against
+  `public.books`, scoped by RLS to rows you own either way.
+- **`EditBookDialog.tsx`** (new) — the same fields and cover-upload flow as
+  `AddBookDialog`, pre-filled from the book being edited, submitting through
+  the existing `updateBook(id, patch)` rather than creating a new row. It's a
+  separate component rather than a shared one with two modes: the two
+  dialogs diverge enough (add navigates and kicks off the Open Library
+  lookup; edit does neither, and starts from existing values) that branching
+  one component on an `isEdit` flag throughout would've been harder to read
+  than two small, mostly-similar files.
+- Both are wired in from the Book page itself: a pencil and trash icon sit
+  next to the status badge at the top of the book summary (`hover:bg-tint`,
+  matching every other icon button in the app; the trash one turns
+  `text-rust` on hover as the one deliberate "this is destructive" signal).
+  Delete asks for confirmation via the browser's native `window.confirm` —
+  no new modal component for a single yes/no gate — then sends you back to
+  My Books.
+
+**Judgment call:** edit/delete only live on the Book page, not on the My
+Books grid cards. You didn't specify where, and the Book page is already
+where every other per-book action (status, expectations, chapters) lives —
+adding a second entry point on the card felt like scope beyond what was
+asked. Say if you'd rather have a quick delete from the grid too.
+
+### Verification performed
+
+- `npx tsc --noEmit` — clean.
+- `npm run build` — clean production build.
+- Fetched every new/changed file through the running Vite dev server
+  (`BookDetail.tsx`, `EditBookDialog.tsx`, `ChapterRow.tsx`, `store.tsx`) —
+  all `200`, no transform-error overlay.
+- Same limitation as §14: no browser tool available here to click through
+  the authenticated app myself, so the actual green-ness of the checkbox and
+  the edit/delete flow are worth a real look on your end.
+
+---
+
+## 16. Notes & Insights page; Library dropped
+
+Both sidebar items were "shown but inert" from the very start — the design
+canvas referenced `Bookish.NavItem` for "Notes & Insights" and "Library" with
+no `href`, meaning no page was ever built behind either (see the original
+note in `Sidebar.tsx`, now updated). You asked to finish one and drop the
+other.
+
+### Notes & Insights — now a real page
+
+- `collectBookNotes()` (new, `src/lib/stats.ts` next to the other
+  aggregation helpers) walks every book's chapters and keeps only the ones
+  with a reflection, a freeform note, or a key takeaway — the same filters
+  `BookDetail`'s own Notes/Insights tabs already used per-book, just run
+  across the whole library instead of one book.
+- `src/pages/NotesInsights.tsx` (new) renders the result **grouped by book**,
+  as asked: each book gets its own card (title linking to the Book page,
+  author underneath), and inside it, each chapter with content (reflection in
+  script font, freeform notes, key-takeaway bullets — visually identical to
+  what `BookDetail` already shows per-chapter) links straight to that
+  chapter. A search box filters the list by book title/author once there's
+  more than nothing to search.
+- Route added at `/notes`; the sidebar's "Notes & Insights" is a real
+  `NavItem` now instead of `NavItemDisabled`. Added to the mobile tab bar too
+  (`MobileTabBar.tsx`) — it only had Home/My Books/Stats/Settings before,
+  which would have left phone-width users with no way to reach this page at
+  all.
+
+### Library — removed
+
+Dropped the sidebar entry entirely rather than building a page for it, per
+your note that it would just duplicate My Books. `NavItemDisabled`
+(`src/components/bookish/NavItem.tsx`) is now unused anywhere in the app, so
+it was deleted outright rather than left as dead code.
+
+### Verification performed
+
+- `npx tsc --noEmit` — clean.
+- `npm run build` — clean production build.
+- Fetched every new/changed file through the running Vite dev server
+  (`App.tsx`, `NotesInsights.tsx`, `Sidebar.tsx`, `MobileTabBar.tsx`,
+  `NavItem.tsx`, `stats.ts`) — all `200`, no transform-error overlay.
+- Same standing limitation: no browser tool available here, so the grouped
+  layout and the mobile tab bar are worth a real look on your end.
+
+---
+
 ## What to look at first
 
 If you only check a few things: **§8** (what's in your seed data and why
-Diary of a CEO's cover is a placeholder), **§9** (the local-only data
-limitation), and **§10** (the responsive layout call, since it's the one
-most likely to not match what you pictured). Everything else is either a
-direct port of your design or a small, disclosed addition in service of it.
+Diary of a CEO's cover is a placeholder), **§10** (the responsive layout
+call, since it's the one most likely to not match what you pictured), **§13**
+(the new Supabase backend — what's actually protecting your data, and the
+handful of calls made without stopping to ask each one), **§14** (cover
+uploads, chapter preload, and the progress-bar bug fix), **§15** (the
+checkbox cascade bug — a good one to understand if you hit similar
+Tailwind-vs-custom-CSS ordering issues again — plus edit/delete), and
+**§16** (Notes & Insights is now real; Library is gone). I couldn't
+visually test any of the UI in this environment, so give the app a real
+look yourself before considering this done.
