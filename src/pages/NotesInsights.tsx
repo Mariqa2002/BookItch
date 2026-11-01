@@ -25,7 +25,7 @@ export default function NotesInsights() {
 
   return (
     <DashboardShell>
-      <div className="flex flex-col gap-6">
+      <div className="flex flex-col gap-6 p-4">
         <header className="flex flex-wrap items-start justify-between gap-5">
           <div className="flex-1 basis-[280px]">
             <h1 className="m-0 font-sans text-[28px] font-bold leading-9 text-ink">Notes &amp; Insights</h1>

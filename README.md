@@ -32,6 +32,28 @@ Vercel, GitHub Pages, etc.) — it's still a plain client-side app, just one
 that talks to Supabase instead of `localStorage`. If you deploy it, set the
 same two `VITE_SUPABASE_*` env vars in your host's build settings.
 
+## Deploying to GitHub Pages
+
+`.github/workflows/deploy.yml` builds and publishes `dist/` to GitHub Pages
+on every push to `main`. One-time setup, both in the repo on github.com:
+
+1. **Settings → Pages → Build and deployment → Source: "GitHub Actions."**
+   Without this the workflow runs but has nowhere to publish to.
+2. **Settings → Secrets and variables → Actions → New repository secret** —
+   add `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY` with the same values
+   from your `.env.local`. The build needs them to produce a working bundle;
+   without them it fails the same way `npm run build` would locally with no
+   `.env.local` (see `src/lib/supabase.ts`).
+3. In Supabase: **Authentication → URL Configuration** — add your Pages URL
+   (`https://<your-username>.github.io/BookItch/`) to **Redirect URLs**, and
+   update **Site URL** to it too if this becomes the primary place you use
+   the app. Otherwise sign-up confirmation emails link back to `localhost`.
+
+After that, every push to `main` redeploys automatically — check progress
+under the repo's **Actions** tab. The site is served from `/BookItch/`
+(`vite.config.ts`'s `base`), not the domain root, since this isn't a
+`<username>.github.io` repo.
+
 ## Where things live
 
 - `supabase/migrations/` — every change made to the database schema, in
@@ -47,8 +69,8 @@ same two `VITE_SUPABASE_*` env vars in your host's build settings.
   tokens and component CSS, ported verbatim.
 - `src/components/bookish/` — the design system's components (Button,
   Badge, ProgressBar, …), matching the design's own naming.
-- `src/pages/` — the six screens (Home, My Books, Book, Chapter, Stats,
-  Settings).
+- `src/pages/` — the seven screens (Home, My Books, Book, Chapter, Notes &amp;
+  Insights, Stats, Settings).
 
 See `ACTIONS.md` for the full build log, including every judgment call made
 where the design didn't specify something.

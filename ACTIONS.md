@@ -869,6 +869,91 @@ it was deleted outright rather than left as dead code.
 
 ---
 
+## 17. Main-area margin on My Books, Notes & Insights, and Stats
+
+`DashboardShell`'s `<main>` (`src/components/layout/DashboardShell.tsx`) has
+never had any padding of its own — `Home.tsx` only looked fine because its
+own top-level wrapper already carried `p-4`. My Books, Notes & Insights, and
+Stats never got that wrapper padding, so their content ran edge-to-edge.
+
+Fixed by adding `p-4` (the design system's `--space-4`, 16px) to each of
+those three pages' own outer `<div>` — matching Home's existing value
+exactly, rather than introducing a new spacing choice. `Sidebar.tsx` and
+`DashboardShell.tsx` itself were left untouched, per your instruction; the
+fix lives entirely in the three pages that needed it.
+
+---
+
+## 18. Hosting on GitHub Pages
+
+### What's set up
+
+- **`vite.config.ts`** — `base` is now `/BookItch/` for `vite build` (and
+  stays `/` for `vite dev`/`vite preview`, so local dev is unaffected). GitHub
+  Pages serves this repo at `github.io/BookItch/`, not the domain root, since
+  it isn't a `<username>.github.io` repo — every built asset path needs that
+  prefix or they'd 404.
+- **`public/404.html`** + a small script added to `index.html` — GitHub
+  Pages has no server-side rewrites, so a direct load or refresh of a deep
+  link (`/BookItch/books/<id>`) would otherwise hit Pages' own 404 instead of
+  your app. This is the standard `rafgraph/spa-github-pages` trick: the 404
+  page repacks the real path into a query string and redirects to the app
+  root; the `index.html` script unpacks it back into the real URL via
+  `history.replaceState` before React or react-router ever see it. No
+  router change needed — `BrowserRouter` stays as-is.
+- **`.github/workflows/deploy.yml`** (new) — on every push to `main`:
+  installs, builds with the two `VITE_SUPABASE_*` secrets injected as env
+  vars, then publishes `dist/` via `actions/upload-pages-artifact` +
+  `actions/deploy-pages` (the current GitHub-recommended flow — no
+  `gh-pages` branch, no third-party action).
+
+### What I couldn't do for you
+
+No GitHub CLI and no API token are available in this environment, so these
+are one-time manual steps on github.com — written up in README's new
+"Deploying to GitHub Pages" section, repeated here since they're the part
+most likely to need doing before anything deploys successfully:
+
+1. **Settings → Pages → Source: "GitHub Actions."** Pages defaults to a
+   different source; the workflow has nothing to publish to until this is
+   switched.
+2. **Settings → Secrets and variables → Actions** — add `VITE_SUPABASE_URL`
+   and `VITE_SUPABASE_ANON_KEY` as repository secrets (same values as your
+   `.env.local`). Without them the build fails in CI the same way it would
+   locally with no `.env.local` — `src/lib/supabase.ts` throws on purpose
+   rather than shipping a build that can't reach your database.
+3. **Supabase dashboard → Authentication → URL Configuration** — add the
+   Pages URL to Redirect URLs (and update Site URL if this becomes where you
+   actually use the app). Otherwise sign-up confirmation emails keep linking
+   back to `localhost`.
+
+### Loose end found while working on this
+
+`.env.example` shows as deleted in your working tree (unstaged) — I didn't
+touch it and don't know if that was intentional. Flagging it rather than
+guessing: let me know if you want it restored, or if the deletion was on
+purpose and should just be committed.
+
+### Judgment call
+
+Deploying only from `main` via GitHub Actions, not a `gh-pages` branch —
+no build artifacts get committed to git history, and it's the path GitHub
+itself now recommends over the older `peaceiris/actions-gh-pages` /
+`gh-pages` branch approach.
+
+### Verification performed
+
+- `npx tsc --noEmit` — clean.
+- `npm run build` — clean production build with the new `base`; confirmed
+  in the output `dist/index.html` that asset paths got the `/BookItch/`
+  prefix and that `404.html` was copied into `dist/`.
+- Could not run the actual GitHub Actions workflow or verify a live Pages
+  deploy from here — that only happens once you push and complete the two
+  manual steps above. Worth watching the **Actions** tab on the first push
+  to confirm it goes green.
+
+---
+
 ## What to look at first
 
 If you only check a few things: **§8** (what's in your seed data and why
@@ -878,7 +963,9 @@ call, since it's the one most likely to not match what you pictured), **§13**
 handful of calls made without stopping to ask each one), **§14** (cover
 uploads, chapter preload, and the progress-bar bug fix), **§15** (the
 checkbox cascade bug — a good one to understand if you hit similar
-Tailwind-vs-custom-CSS ordering issues again — plus edit/delete), and
-**§16** (Notes & Insights is now real; Library is gone). I couldn't
+Tailwind-vs-custom-CSS ordering issues again — plus edit/delete), **§16**
+(Notes & Insights is now real; Library is gone), and **§18** (GitHub Pages
+hosting — the manual steps there are required, not optional, before any of
+this goes live). I couldn't
 visually test any of the UI in this environment, so give the app a real
 look yourself before considering this done.
