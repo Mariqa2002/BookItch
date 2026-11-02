@@ -4,6 +4,11 @@ import { supabase } from '@/lib/supabase'
 import { defaultSettings } from './seed'
 import type { Book, Chapter, ChapterState, LegacyYearTotal, ReadingStatus, Settings, TodayItem } from './types'
 
+/** Chapters predating the "new words" feature won't have this field yet. */
+function normalizeChapter(chapter: Chapter): Chapter {
+  return { ...chapter, newWords: chapter.newWords ?? [] }
+}
+
 interface LibraryContextValue {
   books: Book[]
   legacyYearTotals: LegacyYearTotal[]
@@ -22,6 +27,8 @@ interface LibraryContextValue {
   setChapterReflection: (bookId: string, chapterId: string, reflection: string) => void
   setChapterTakeaways: (bookId: string, chapterId: string, takeaways: string[]) => void
   addChapterNote: (bookId: string, chapterId: string, text: string) => void
+  addChapterWord: (bookId: string, chapterId: string, word: string, meaning: string) => void
+  removeChapterWord: (bookId: string, chapterId: string, wordId: string) => void
 
   toggleTodayItem: (id: string) => void
   updateSettings: (patch: Partial<Settings>) => void
@@ -67,7 +74,7 @@ function fromBookRow(row: any): Book {
     startedAt: row.started_at ?? undefined,
     targetDate: row.target_date ?? undefined,
     finishedAt: row.finished_at ?? undefined,
-    chapters: (row.chapters ?? []) as Chapter[],
+    chapters: ((row.chapters ?? []) as Chapter[]).map(normalizeChapter),
   }
 }
 
@@ -255,6 +262,7 @@ export function LibraryProvider({ children }: { children: ReactNode }) {
         keyTakeaways: [],
         reflection: '',
         notes: [],
+        newWords: [],
       }
       const chapters = [...book.chapters, chapter]
       setBooks((prev) => prev.map((b) => (b.id === bookId ? { ...b, chapters } : b)))
@@ -306,6 +314,24 @@ export function LibraryProvider({ children }: { children: ReactNode }) {
     [mapChapter],
   )
 
+  const addChapterWord = useCallback(
+    (bookId: string, chapterId: string, word: string, meaning: string) =>
+      mapChapter(bookId, chapterId, (c) => ({
+        ...c,
+        newWords: [...c.newWords, { id: makeId('word'), word, meaning }],
+      })),
+    [mapChapter],
+  )
+
+  const removeChapterWord = useCallback(
+    (bookId: string, chapterId: string, wordId: string) =>
+      mapChapter(bookId, chapterId, (c) => ({
+        ...c,
+        newWords: c.newWords.filter((w) => w.id !== wordId),
+      })),
+    [mapChapter],
+  )
+
   const toggleTodayItem = useCallback(
     (id: string) => {
       const item = todayItemsRef.current.find((t) => t.id === id)
@@ -352,6 +378,8 @@ export function LibraryProvider({ children }: { children: ReactNode }) {
       setChapterReflection,
       setChapterTakeaways,
       addChapterNote,
+      addChapterWord,
+      removeChapterWord,
       toggleTodayItem,
       updateSettings,
     }),
@@ -371,6 +399,8 @@ export function LibraryProvider({ children }: { children: ReactNode }) {
       setChapterReflection,
       setChapterTakeaways,
       addChapterNote,
+      addChapterWord,
+      removeChapterWord,
       toggleTodayItem,
       updateSettings,
     ],

@@ -137,7 +137,7 @@ export default function Stats() {
           variants={panelGrid}
           initial="hidden"
           animate="show"
-          className="grid gap-5 [grid-template-columns:repeat(auto-fit,minmax(380px,1fr))]"
+          className="grid gap-5 [grid-template-columns:repeat(auto-fit,minmax(min(380px,100%),1fr))]"
         >
           {/* Books finished per month */}
           <motion.section variants={panel} aria-labelledby="per-month" className="flex flex-col gap-4 rounded-bk-lg border border-border bg-surface p-5 shadow-bk-card">

@@ -1,3 +1,4 @@
+import { useEffect } from 'react'
 import { Routes, Route, useLocation, type Location } from 'react-router-dom'
 import { PageTransition } from '@/components/layout/PageTransition'
 import Home from '@/pages/Home'
@@ -16,10 +17,19 @@ export default function App() {
   const location = useLocation()
   const state = location.state as LocationState | null
   const backgroundLocation = state?.backgroundLocation
+  const pageKey = (backgroundLocation ?? location).pathname
+
+  // Land at the top of every new page instead of wherever the previous
+  // page happened to be scrolled to. Keyed on the actual page (not the
+  // Settings overlay's own location), so opening Settings on top of a
+  // scrolled page doesn't yank the background page back to the top.
+  useEffect(() => {
+    window.scrollTo(0, 0)
+  }, [pageKey])
 
   return (
     <>
-      <PageTransition pathKey={(backgroundLocation ?? location).pathname}>
+      <PageTransition pathKey={pageKey}>
         <Routes location={backgroundLocation ?? location}>
           <Route path="/" element={<Home />} />
           <Route path="/books" element={<MyBooks />} />

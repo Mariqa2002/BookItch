@@ -546,3 +546,13 @@ a.bk-btn {
   text-align: right;
   font-variant-numeric: tabular-nums;
 }
+
+/* iOS Safari zooms the page on focus of any text input under 16px —
+   bump just the font-size (not line-height/padding) below the sm
+   breakpoint so the design's 13px inputs stop triggering it. */
+@media (max-width: 640px) {
+  .bk-input,
+  .bk-search input {
+    font-size: 16px;
+  }
+}

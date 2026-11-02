@@ -1,4 +1,5 @@
 import { Home, BookOpen, NotebookPen, BarChart3, Settings as SettingsIcon } from 'lucide-react'
+import { createPortal } from 'react-dom'
 import { NavLink, useLocation, Link } from 'react-router-dom'
 import { cn } from '@/lib/cn'
 
@@ -7,6 +8,13 @@ import { cn } from '@/lib/cn'
  * plum sidebar on phone/tablet widths where a 220px fixed sidebar
  * wouldn't fit. Own addition — the design only shows desktop-width
  * dashboards — see ACTIONS.md "Responsive strategy".
+ *
+ * Portaled straight to <body>: every page wraps its content in
+ * PageTransition's .bk-page-flip-stage, which sets `perspective` for
+ * the page-flip animation. `perspective` (like `transform`) creates a
+ * new containing block for `position: fixed` descendants, so without
+ * the portal this nav would be "fixed" to that stage div instead of
+ * the viewport — scrolling away with the page instead of staying put.
  */
 export function MobileTabBar() {
   const location = useLocation()
@@ -16,7 +24,7 @@ export function MobileTabBar() {
       isActive ? 'bg-violet-300 text-on-violet-300' : 'text-on-plum-muted',
     )
 
-  return (
+  return createPortal(
     <nav
       aria-label="Main"
       className="fixed inset-x-0 bottom-0 z-30 flex gap-1 bg-plum px-3 pt-2 lg:hidden"
@@ -46,6 +54,7 @@ export function MobileTabBar() {
         <SettingsIcon width={20} height={20} strokeWidth={2} aria-hidden="true" />
         Settings
       </Link>
-    </nav>
+    </nav>,
+    document.body,
   )
 }

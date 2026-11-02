@@ -14,6 +14,7 @@ export function EditBookDialog({ book, onClose }: { book: Book; onClose: () => v
   const [author, setAuthor] = useState(book.author)
   const [subtitle, setSubtitle] = useState(book.subtitle ?? '')
   const [genre, setGenre] = useState<Genre>(book.genre)
+  const [startedAt, setStartedAt] = useState(book.startedAt ?? '')
   const [coverUrl, setCoverUrl] = useState<string | undefined>(book.coverUrl)
   const [coverError, setCoverError] = useState<string | null>(null)
   const [processingCover, setProcessingCover] = useState(false)
@@ -45,6 +46,7 @@ export function EditBookDialog({ book, onClose }: { book: Book; onClose: () => v
       subtitle: subtitle.trim() || undefined,
       genre,
       coverUrl,
+      startedAt: startedAt || undefined,
     })
     onClose()
   }
@@ -123,6 +125,15 @@ export function EditBookDialog({ book, onClose }: { book: Book; onClose: () => v
             <option value="non-fiction">Non-fiction</option>
             <option value="fiction">Fiction</option>
           </Select>
+        </label>
+        <label className="flex flex-col gap-1.5">
+          <span className="set-label">Started reading</span>
+          <input
+            className="bk-input"
+            type="date"
+            value={startedAt}
+            onChange={(e) => setStartedAt(e.target.value)}
+          />
         </label>
 
         <footer className="mt-2 flex items-center justify-end gap-3">

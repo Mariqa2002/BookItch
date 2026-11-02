@@ -67,8 +67,8 @@ export default function Home() {
     <DashboardShell>
       <div className="flex flex-wrap items-start gap-8 p-4">
         <div className="flex min-w-0 flex-1 basis-[480px] flex-col gap-8">
-          <header className="flex flex-wrap items-start justify-between gap-5">
-            <div className="flex-1 basis-[260px]">
+          <header className="flex flex-col-reverse gap-4 sm:flex-row sm:flex-wrap sm:items-start sm:justify-between sm:gap-5">
+            <div className="sm:flex-1 sm:basis-[260px]">
               <h1 className="m-0 font-sans text-3xl font-bold leading-[44px] tracking-[-0.5px] text-ink sm:text-[36px]">
                 <span className="block">{greeting()}</span>
                 <span>{settings.displayName}</span>
@@ -77,13 +77,13 @@ export default function Home() {
                 More books. More perspective. More you.
               </p>
             </div>
-            <div className="flex flex-wrap items-center justify-end gap-4">
+            <div className="flex items-center gap-3 sm:flex-wrap sm:justify-end sm:gap-4">
               <form
                 onSubmit={(e) => {
                   e.preventDefault();
                   handleSearchSubmit(query);
                 }}
-                className="w-full max-w-full sm:w-[280px]"
+                className="max-w-full flex-1 sm:w-[280px] sm:flex-none"
               >
                 <SearchField
                   value={query}
@@ -93,7 +93,9 @@ export default function Home() {
                   aria-label="Search your books"
                 />
               </form>
-              <ThemeToggle />
+              <div className="shrink-0">
+                <ThemeToggle />
+              </div>
             </div>
           </header>
 

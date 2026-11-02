@@ -8,6 +8,12 @@ export interface ChapterNote {
   createdAt: string // ISO date
 }
 
+export interface NewWord {
+  id: string
+  word: string
+  meaning: string
+}
+
 export interface Chapter {
   id: string
   number: number
@@ -21,6 +27,8 @@ export interface Chapter {
   reflection: string
   /** Freeform notes added over time via the chapter's note field. */
   notes: ChapterNote[]
+  /** Words the reader didn't know, with the meaning they looked up. */
+  newWords: NewWord[]
 }
 
 export interface Book {
