@@ -45,9 +45,11 @@ on every push to `main`. One-time setup, both in the repo on github.com:
    without them it fails the same way `npm run build` would locally with no
    `.env.local` (see `src/lib/supabase.ts`).
 3. In Supabase: **Authentication → URL Configuration** — add your Pages URL
-   (`https://<your-username>.github.io/BookItch/`) to **Redirect URLs**, and
-   update **Site URL** to it too if this becomes the primary place you use
-   the app. Otherwise sign-up confirmation emails link back to `localhost`.
+   (`https://<your-username>.github.io/BookItch/`) to **Redirect URLs**.
+   The app tells Supabase where to send confirmation-email links at sign-up
+   time (`src/lib/auth.tsx`, wherever it's actually running), but Supabase
+   still only allows redirecting to URLs on this list — without it, the
+   email's "Confirm" link is rejected.
 
 After that, every push to `main` redeploys automatically — check progress
 under the repo's **Actions** tab. The site is served from `/BookItch/`

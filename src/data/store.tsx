@@ -163,7 +163,9 @@ export function LibraryProvider({ children }: { children: ReactNode }) {
 
       let settingsRow = settingsRes.data
       if (!settingsRow) {
-        const inserted = await supabase.from('settings').insert({ user_id: userId, ...toSettingsRow(defaultSettings) }).select().single()
+        const fullName = session?.user.user_metadata?.full_name as string | undefined
+        const initialSettings = fullName ? { ...defaultSettings, displayName: fullName } : defaultSettings
+        const inserted = await supabase.from('settings').insert({ user_id: userId, ...toSettingsRow(initialSettings) }).select().single()
         logIfError('creating default settings', inserted.error)
         settingsRow = inserted.data
       }

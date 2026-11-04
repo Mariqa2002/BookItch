@@ -6,19 +6,38 @@ import { useAuth } from '@/lib/auth'
 export default function Login() {
   const { signInWithPassword, signUp } = useAuth()
   const [mode, setMode] = useState<'sign-in' | 'sign-up'>('sign-in')
+  const [name, setName] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const [confirmPassword, setConfirmPassword] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [info, setInfo] = useState<string | null>(null)
   const [submitting, setSubmitting] = useState(false)
 
-  async function handleSubmit(e: FormEvent) {
-    e.preventDefault()
+  function resetMessages() {
     setError(null)
     setInfo(null)
-    setSubmitting(true)
+  }
 
-    const result = mode === 'sign-in' ? await signInWithPassword(email, password) : await signUp(email, password)
+  function switchMode() {
+    setMode((m) => (m === 'sign-in' ? 'sign-up' : 'sign-in'))
+    resetMessages()
+    setPassword('')
+    setConfirmPassword('')
+  }
+
+  async function handleSubmit(e: FormEvent) {
+    e.preventDefault()
+    resetMessages()
+
+    if (mode === 'sign-up' && password !== confirmPassword) {
+      setError("Passwords don't match.")
+      return
+    }
+
+    setSubmitting(true)
+    const result =
+      mode === 'sign-in' ? await signInWithPassword(email, password) : await signUp(email, password, name.trim())
 
     setSubmitting(false)
     if (result.error) {
@@ -42,13 +61,27 @@ export default function Login() {
         </div>
 
         <form onSubmit={handleSubmit} className="flex flex-col gap-3">
+          {mode === 'sign-up' && (
+            <label className="flex flex-col gap-1.5">
+              <span className="set-label">Name</span>
+              <input
+                className="bk-input"
+                type="text"
+                required
+                autoFocus
+                autoComplete="name"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+              />
+            </label>
+          )}
           <label className="flex flex-col gap-1.5">
             <span className="set-label">Email</span>
             <input
               className="bk-input"
               type="email"
               required
-              autoFocus
+              autoFocus={mode === 'sign-in'}
               autoComplete="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
@@ -66,6 +99,20 @@ export default function Login() {
               onChange={(e) => setPassword(e.target.value)}
             />
           </label>
+          {mode === 'sign-up' && (
+            <label className="flex flex-col gap-1.5">
+              <span className="set-label">Confirm password</span>
+              <input
+                className="bk-input"
+                type="password"
+                required
+                minLength={6}
+                autoComplete="new-password"
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+              />
+            </label>
+          )}
 
           {error && <p className="m-0 text-sm leading-[20px] text-rust">{error}</p>}
           {info && <p className="m-0 text-sm leading-[20px] text-ink-muted">{info}</p>}
@@ -77,11 +124,7 @@ export default function Login() {
 
         <button
           type="button"
-          onClick={() => {
-            setMode((m) => (m === 'sign-in' ? 'sign-up' : 'sign-in'))
-            setError(null)
-            setInfo(null)
-          }}
+          onClick={switchMode}
           className="mt-4 w-full text-center font-sans text-sm leading-[20px] text-ink-muted underline-offset-2 hover:underline"
         >
           {mode === 'sign-in' ? "Don't have an account? Sign up" : 'Already have an account? Sign in'}

@@ -6,7 +6,7 @@ interface AuthContextValue {
   session: Session | null
   loading: boolean
   signInWithPassword: (email: string, password: string) => Promise<{ error: string | null }>
-  signUp: (email: string, password: string) => Promise<{ error: string | null }>
+  signUp: (email: string, password: string, name: string) => Promise<{ error: string | null }>
   signOut: () => Promise<void>
 }
 
@@ -37,8 +37,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         const { error } = await supabase.auth.signInWithPassword({ email, password })
         return { error: error?.message ?? null }
       },
-      async signUp(email, password) {
-        const { error } = await supabase.auth.signUp({ email, password })
+      async signUp(email, password, name) {
+        // Point the confirmation email back at wherever the app is actually
+        // running (localhost in dev, the GitHub Pages subpath in prod) —
+        // that URL also needs to be on Supabase's Auth → Redirect URLs
+        // allowlist, see README's "Deploying to GitHub Pages" section.
+        const emailRedirectTo = `${window.location.origin}${import.meta.env.BASE_URL}`
+        const { error } = await supabase.auth.signUp({
+          email,
+          password,
+          options: { data: { full_name: name }, emailRedirectTo },
+        })
         return { error: error?.message ?? null }
       },
       async signOut() {
